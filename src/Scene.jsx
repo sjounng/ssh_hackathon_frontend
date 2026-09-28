@@ -273,8 +273,6 @@ function CameraRig({ diamondRefs }) {
   )
 
   useEffect(() => {
-    sections.current = [...document.querySelectorAll('[data-diamond]')]
-    hero.current = document.getElementById('top')
     // 3D가 실제로 뜬 뒤에만 "카메라에 맞춰 내용 등장"을 켠다. 3D가 없으면 내용은 항상 보인다
     document.documentElement.classList.add('reveal-ready')
     return () => document.documentElement.classList.remove('reveal-ready')
@@ -283,6 +281,10 @@ function CameraRig({ diamondRefs }) {
   useFrame(({ clock }, delta) => {
     const now = clock.getElapsedTime()
     const mid = window.innerHeight / 2
+    // 배경은 모든 페이지에 공통이라 페이지를 옮기면 섹션이 바뀐다: 매 프레임 현재 DOM에서 찾는다(요소 몇 개라 가볍다).
+    // 섹션이 없는 기능 페이지에서는 전체 모습을 보여준다
+    sections.current = [...document.querySelectorAll('[data-diamond]')]
+    hero.current = document.getElementById('top')
     // 화면 가운데에 있는 페이지. data-diamond="-1"(마무리 페이지)이나 hero는 유성 없이 전체 모습을 보여준다
     let page = hero.current
     for (const el of sections.current) {

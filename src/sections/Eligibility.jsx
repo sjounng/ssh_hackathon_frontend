@@ -11,9 +11,8 @@ export default function Eligibility() {
 
       <ul className="domains">
         {HOSTS.map((h) => (
-          <li key={h.key}>
-            <span className={`bar ${h.key}`} />
-            <span className="domain-school">{h.name}</span>
+          <li key={h.key} className="glass domain-card">
+            <span className="domain-school"><i className={`dot ${h.key}`} />{h.name}</span>
             <span className={`domain mono ${h.domain ? '' : 'pending'}`}>{h.domain ?? '도메인 확정 예정'}</span>
           </li>
         ))}

@@ -23,12 +23,7 @@ export default function Review() {
       <div className="glass criteria">
         <div className="criteria-head">
           <h3>평가 항목</h3>
-          {/* 1~5점 척도 예시 */}
-          <div className="scale" aria-label="1점부터 5점까지 선택">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={n === 4 ? 'on' : ''}>{n}</span>
-            ))}
-          </div>
+          <span className="chip mono">기획 확정 전</span>
         </div>
         <ul>
           {REVIEW.criteria.map((c) => (

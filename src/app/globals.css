@@ -18,13 +18,26 @@
   --mono: var(--font-jetbrains), ui-monospace, monospace;
   --gutter: clamp(16px, 4vw, 48px);
   --cut: 28px;
+
+  /* 리퀴드 글래스 (네브바·버튼 공통)
+     흰 채움 없이 거의 투명하게 두고, 유리는 두 가지로만 표현한다:
+     1) 가장자리의 렌즈 굴절 (backdrop-filter: url(#lg-*) — LiquidGlassFilter.jsx)
+     2) 빛이 오는 왼쪽 위와 반대편 오른쪽 아래 모서리에만 맺히는 가는 반사선 */
+  --lg-rim: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1) 22%, rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.1) 80%, rgba(255, 255, 255, 0.38));
+  --lg-fill: rgba(255, 255, 255, 0.012);
+  --lg-edge:
+    inset 1px 1px 0.5px rgba(255, 255, 255, 0.28),   /* 왼쪽 위 안쪽 반사 */
+    inset -1px -1px 0.5px rgba(255, 255, 255, 0.1),  /* 오른쪽 아래 안쪽 반사 */
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+  --lg-drop: 0 10px 30px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 /* 페이지 단위 스크롤: 한 번 스크롤하면 다음 섹션이 화면 중앙에 딱 멈춘다 (= 다이아몬드 안 가장 깊은 지점) */
-@media (min-width: 861px) { html { scroll-snap-type: y mandatory; } }
-@media (max-width: 860px) { html { scroll-snap-type: y proximity; } }
+/* 메인 페이지(#top이 있는 페이지)에만 적용: 기능 페이지는 멈출 곳이 푸터뿐이라 강제로 끌려 내려간다 */
+@media (min-width: 861px) { html:has(#top) { scroll-snap-type: y mandatory; } }
+@media (max-width: 860px) { html:has(#top) { scroll-snap-type: y proximity; } }
 .hero, .section, .cta { scroll-snap-align: center; scroll-snap-stop: always; }
 .footer { scroll-snap-align: end; }
 body {
@@ -51,59 +64,116 @@ mark.ph {
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
 .dot.hy { background: var(--hy-light); } .dot.sg { background: var(--sg-light); } .dot.sk { background: var(--sk-light); }
 
-/* ---------- Buttons ---------- */
-.btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 14px; font-weight: 600; padding: 12px 20px; border-radius: 999px;
-  transition: transform 0.2s, background 0.2s, border-color 0.2s; white-space: nowrap;
+/* ---------- 리퀴드 글래스 반사 테두리: 가장자리 1px 링에만 그린다 ----------
+   (테두리 그라데이션을 배경에 깔면 투명한 안쪽으로 그대로 비쳐 하얗게 뜬다) */
+.btn::after, .nav::after, .nav-links a.active::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: var(--lg-rim);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
-.btn:hover { transform: translateY(-2px); }
-.btn.primary { background: #fff; color: #0b0b0c; }
-.btn.ghost { border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(10px); }
-.btn.ghost:hover { border-color: rgba(255, 255, 255, 0.7); }
-.btn.disabled { border: 1px solid var(--line); color: var(--ink-faint); cursor: not-allowed; }
-.btn.disabled:hover { transform: none; }
+
+/* ---------- Buttons: 리퀴드 글래스 ---------- */
+@property --btn-fill { syntax: '<color>'; inherits: false; initial-value: rgba(255, 255, 255, 0.012); }
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 600; padding: 12px 20px; border-radius: 999px; color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  border: 0;
+  background: var(--btn-fill);
+  --btn-fill: var(--lg-fill);
+  box-shadow: var(--lg-edge), var(--lg-drop);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-pill) saturate(1.6);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), --btn-fill 0.2s;
+}
+.btn:hover { transform: translateY(-1px) scale(1.02); --btn-fill: rgba(255, 255, 255, 0.05); }
+.btn:active { transform: scale(0.98); }
+.btn.primary { --btn-fill: rgba(255, 255, 255, 0.06); }
+.btn.primary:hover { --btn-fill: rgba(255, 255, 255, 0.1); }
+.btn.ghost { --btn-fill: var(--lg-fill); }
+.btn.disabled { color: var(--ink-faint); cursor: not-allowed; opacity: 0.65; }
+.btn.disabled:hover { transform: none; --btn-fill: var(--lg-fill); }
 .btn.small { padding: 8px 16px; font-size: 13px; }
 .btn.lg { padding: 16px 28px; font-size: 16px; }
-.btn-tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #0b0b0c; color: #fff; }
+.btn-tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); color: #fff; }
 
 .chip { font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); white-space: nowrap; }
 
-/* ---------- Glass panel: 모서리를 잘라낸 각진 유리 ---------- */
+/* ---------- Glass panel: 모서리를 잘라낸 리퀴드 글래스 (네브바·버튼과 같은 표현) ---------- */
 .glass {
   position: relative;
   padding: 28px;
   clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  /* 흰 채움 없이, 글이 읽히도록 아주 옅게만 어둡게 */
+  background: rgba(8, 10, 14, 0.16);
+  box-shadow: var(--lg-edge);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-card) saturate(1.6);
+}
+/* 반사선: 잘린 모서리까지 그대로 따라가는 1px 테두리 (바깥 다각형과 1px 안쪽 다각형 사이만 칠한다) */
+.glass::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--lg-rim);
+  clip-path: polygon(evenodd,
+    0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 0,
+    1px 1px, 1px calc(100% - var(--cut) - 0.4px), calc(var(--cut) + 0.4px) calc(100% - 1px), calc(100% - 1px) calc(100% - 1px),
+    calc(100% - 1px) calc(var(--cut) + 0.4px), calc(100% - var(--cut) - 0.4px) 1px, 1px 1px);
 }
 
-/* ---------- Nav ---------- */
+/* ---------- Nav: 리퀴드 글래스 ---------- */
 .nav {
   position: fixed; inset: 14px var(--gutter) auto; z-index: 20;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 8px 8px 8px 18px; border-radius: 999px;
-  background: rgba(12, 14, 18, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  padding: 7px 7px 7px 18px; border-radius: 999px;
+  border: 0;
+  background: var(--nav-fill);
+  --nav-fill: var(--lg-fill);
+  box-shadow: var(--lg-edge), var(--lg-drop);
+  -webkit-backdrop-filter: blur(4px) saturate(1.7);
+  backdrop-filter: url(#lg-bar) saturate(1.7);
   transition: background 0.3s;
 }
-.nav.scrolled { background: rgba(12, 14, 18, 0.72); }
+.nav > * { position: relative; }
+/* 스크롤해서 글 위에 올라가면 읽히도록 아주 살짝만 어둡게 (흰 기운은 넣지 않는다) */
+.nav.scrolled { --nav-fill: rgba(6, 8, 12, 0.18); }
 .logo { display: flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 800; font-size: 14px; }
 .logo-text { margin-left: 8px; }
 .nav-links { display: flex; gap: 2px; }
-.nav-links a { font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft); transition: background 0.2s, color 0.2s; }
-.nav-links a:hover { background: rgba(255, 255, 255, 0.08); color: var(--ink); }
+.nav-links a {
+  position: relative;
+  font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft);
+  border: 1px solid transparent; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: color 0.2s, background-color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); background-color: rgba(255, 255, 255, 0.04); }
+/* 지금 보고 있는 페이지: 네브바 안에 한 겹 더 떠 있는 작은 리퀴드 글래스 */
+.nav-links a.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: var(--lg-edge), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
 .nav-right { display: flex; align-items: center; gap: 6px; }
+/* 유리 안의 유리: 안쪽은 굴절을 끈다(바깥 유리의 빈 바탕을 비춰 하얗게 뜨므로). 반사선만 남긴다 */
+.nav-right .btn { box-shadow: var(--lg-edge), 0 2px 8px rgba(0, 0, 0, 0.25); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.nav-right .btn.active { --btn-fill: rgba(255, 255, 255, 0.06); }
 .menu-btn { display: none; width: 38px; height: 38px; border-radius: 50%; position: relative; }
 .menu-btn span { position: absolute; left: 11px; right: 11px; height: 1.5px; background: #fff; transition: transform 0.25s; }
 .menu-btn span:first-child { top: 15px; } .menu-btn span:last-child { top: 22px; }
 .nav.open .menu-btn span:first-child { transform: translateY(3.5px) rotate(45deg); }
 .nav.open .menu-btn span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+
+/* ---------- 기능 페이지 (준비 중) ---------- */
+.page { position: relative; z-index: 1; min-height: 100svh; padding: 140px var(--gutter) 96px; }
+.page-inner { max-width: 720px; }
+.page h1 { font-family: var(--display); font-weight: 600; font-size: clamp(34px, 5vw, 64px); letter-spacing: -0.03em; line-height: 1.05; }
+.page-card { margin: 40px 0 28px; }
+.page-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.page-card-head h2 { font-family: var(--body); font-size: 18px; font-weight: 600; letter-spacing: 0; }
+.page-card li { position: relative; padding: 12px 0 12px 20px; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.55; color: var(--ink-soft); }
+.page-card li::before { content: ''; position: absolute; left: 2px; top: 1.2em; width: 6px; height: 6px; background: var(--ink-faint); transform: rotate(45deg); }
 
 /* ---------- Hero ---------- */
 /* 페이지 전체 뒤에 고정된 3D 장면. 섹션들은 그 위를 스크롤한다 */
@@ -199,7 +269,6 @@ h3 { font-size: 20px; font-weight: 600; }
 .stats dt { font-size: 13px; color: var(--ink-faint); margin-bottom: 8px; }
 .stats dd { font-family: var(--display); font-weight: 600; font-size: clamp(26px, 3vw, 40px); }
 .topic { padding: 36px; }
-.topic::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(var(--hy-light), var(--sk-light), var(--sg-light)); }
 .topic h3 { font-family: var(--display); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; margin-bottom: 16px; }
 .topic p { color: var(--ink-soft); line-height: 1.7; }
 
@@ -209,21 +278,21 @@ h3 { font-size: 20px; font-weight: 600; }
 .award-rank { font-size: 15px; color: var(--ink-soft); margin-bottom: auto; }
 .award-amount { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3.4vw, 48px); letter-spacing: -0.03em; }
 .award-count { margin-top: 8px; font-size: 13px; color: var(--ink-faint); }
-.award.highlight { background: linear-gradient(145deg, rgba(61, 134, 224, 0.28), rgba(255, 74, 61, 0.14) 60%, rgba(63, 191, 138, 0.18)); border-color: rgba(255, 255, 255, 0.28); }
 .award.highlight .award-amount { font-size: clamp(38px, 4.6vw, 68px); }
 .benefits { margin-top: 48px; display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
 .benefits ul { display: flex; flex-wrap: wrap; gap: 10px; }
 .benefits li { padding: 12px 18px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; }
 
 /* Eligibility */
-.domains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 20px; }
-.domains li { background: rgba(5, 6, 8, 0.6); backdrop-filter: blur(12px); padding: 22px 24px; display: grid; gap: 6px; position: relative; }
-.domains .bar { position: absolute; left: 0; top: 0; right: 0; height: 3px; }
-.bar.hy { background: var(--hy-light); } .bar.sg { background: var(--sg-light); } .bar.sk { background: var(--sk-light); }
-.domain-school { font-weight: 600; font-size: 16px; }
+.domains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.domain-card { --cut: 18px; padding: 20px 22px; display: grid; gap: 8px; }
+.domain-school { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; }
 .domain { font-size: 14px; color: var(--ink-soft); }
 .domain.pending { color: var(--ink-faint); }
-.tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+/* 두 박스 높이를 맞추고, 마지막 결과 문구는 항상 아래쪽 같은 높이에 */
+.track { display: flex; flex-direction: column; }
+.track ol { flex: 1; align-content: start; }
 .track-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .track-head h3 { font-family: var(--display); font-size: 26px; }
 .track ol { counter-reset: step; display: grid; gap: 14px; }
@@ -242,9 +311,6 @@ h3 { font-size: 20px; font-weight: 600; }
 .principle p { font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
 .criteria { margin-top: 16px; }
 .criteria-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.scale { display: flex; gap: 6px; }
-.scale span { width: 34px; height: 34px; display: grid; place-items: center; font-family: var(--mono); font-size: 13px; border: 1px solid var(--line); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); background: rgba(255, 255, 255, 0.08); }
-.scale span.on { background: #fff; color: #0b0b0c; }
 .criteria ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
 .criteria li { display: flex; justify-content: space-between; padding: 14px 0; border-top: 1px solid var(--line); font-size: 15px; }
 
@@ -314,7 +380,7 @@ h3 { font-size: 20px; font-weight: 600; }
 @media (max-width: 960px) {
   .nav-links { display: none; }
   .menu-btn { display: block; }
-  .nav.open { border-radius: 24px; flex-wrap: wrap; background: rgba(12, 14, 18, 0.92); }
+  .nav.open { border-radius: 24px; flex-wrap: wrap; --nav-fill: rgba(8, 10, 14, 0.6); }
   .nav.open .nav-links { display: grid; order: 3; width: 100%; padding: 8px 0 6px; }
   .nav.open .nav-links a { padding: 12px 10px; font-size: 16px; }
 }

@@ -1,4 +1,9 @@
 import { Inter_Tight, JetBrains_Mono, Unbounded } from 'next/font/google'
+import BackgroundScene from '../components/BackgroundScene.jsx'
+import Header from '../components/Header.jsx'
+import Hud from '../components/Hud.jsx'
+import LiquidGlassFilter from '../components/LiquidGlassFilter.jsx'
+import SiteFooter from '../components/SiteFooter.jsx'
 import './globals.css'
 
 const unbounded = Unbounded({ subsets: ['latin'], weight: ['400', '600', '800'], variable: '--font-unbounded' })
@@ -24,7 +29,15 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {/* 3D 배경·HUD·헤더·푸터는 모든 페이지에 공통. 페이지를 옮겨도 배경이 끊기지 않는다 */}
+        <LiquidGlassFilter />
+        <BackgroundScene />
+        <Hud />
+        <Header />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   )
 }
