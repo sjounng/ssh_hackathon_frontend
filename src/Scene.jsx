@@ -77,7 +77,8 @@ function Backdrop() {
             float shafts = .65 + .7 * dust;
             float fall = exp(-d * .5);
 
-            vec3 light = tint * (.28 + pow(max(1. - r, 0.), 1.4) * .85) * shafts + tint * hot * .6 + vec3(1.) * hot * .04;
+            // 빔 안을 고르게 채우는 성분(.1)은 작게, 축으로 모이는 성분(pow 2.2)을 크게: 겹쳐도 화면이 뿌옇게 덮이지 않는다
+            vec3 light = tint * (.04 + pow(max(1. - r, 0.), 3.) * 1.) * shafts + tint * hot * .4;
             return light * inside * fall;
           }
 
@@ -95,12 +96,13 @@ function Backdrop() {
             float swC = sin(t * .21 + 4.) * .08 + sin(t * .41 + 2.7) * .03;
             vec2 drift = vec2(sin(t * .10), cos(t * .085)) * .04;
             col += beam(p, vec2(-.30, 1.30) + drift,                   // 좌상단 밖: Hanyang Blue
-              uA * 2.1,  vec3(.05, .01, .24), vec3(.0, .10, .21), .24 + sin(t * .24) * .02, swA, 1.);
+              uA * 1.4,  vec3(.03, .01, .16), vec3(.0, .07, .14), .24 + sin(t * .24) * .02, swA, 1.);
             col += beam(p, vec2(.55, -.45) + drift.yx * vec2(1.5, .5), // 하단 밖: Sogang Red
-              uB * 1.55, vec3(.24, .0, .06),  vec3(.30, .06, .0), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
+              uB * 1.05, vec3(.16, .0, .04),  vec3(.2, .04, .0), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
             col += beam(p, vec2(1.35, .95) - drift,                    // 우상단 밖: SKKU Green
-              uC * 3.1,  vec3(.0, .08, .07),  vec3(.06, .12, .0), .27 + sin(t * .25 + 2.) * .02, swC, 13.);
+              uC * 2.1,  vec3(.0, .055, .045), vec3(.04, .08, .0), .27 + sin(t * .25 + 2.) * .02, swC, 13.);
             col = col / (1. + col * .9); // 부드러운 톤 압축
+            col = pow(col, vec3(1.25));       // 어두운 영역을 더 가라앉혀 대비를 높인다(뿌옇게 뜨지 않게)
 
             // 옅은 격자: 빛이 닿는 곳에서만 보이게
             vec2 gUv = p * vec2(18. * uAspect, 18.);
@@ -108,7 +110,7 @@ function Backdrop() {
             float line = 1. - min(min(g.x, g.y), 1.);
             col += line * .03 * (col.r + col.g + col.b + .02);
 
-            col *= max(.3, 1. - .35 * length(p - .5));         // 비네팅
+            col *= max(.25, 1. - .45 * length(p - .5));        // 비네팅
             col += (hash(gl_FragCoord.xy) - .5) * .006; // 밴딩 방지 그레인
             gl_FragColor = vec4(col, 1.);
             #include <colorspace_fragment>
