@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Edges, Environment, Float, Lightformer, MeshTransmissionMaterial, PerformanceMonitor, Sparkles, useFBO } from '@react-three/drei'

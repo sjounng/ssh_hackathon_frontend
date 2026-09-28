@@ -12,9 +12,10 @@
   --hy-light: #3d86e0;
   --sg-light: #ff4a3d;
   --sk-light: #3fbf8a;
-  --display: 'Unbounded', system-ui, sans-serif;
-  --body: 'Inter Tight', 'Pretendard Variable', Pretendard, system-ui, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* --font-* 변수는 layout.jsx에서 next/font로 불러온 글꼴 */
+  --display: var(--font-unbounded), system-ui, sans-serif;
+  --body: var(--font-inter-tight), 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  --mono: var(--font-jetbrains), ui-monospace, monospace;
   --gutter: clamp(16px, 4vw, 48px);
   --cut: 28px;
 }

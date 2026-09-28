@@ -1,3 +1,5 @@
+'use client'
+
 import { hud } from '../lib/hud.js'
 
 // 관측 HUD: 초점이 맞은 유성(다이아몬드)에 조준 표시와 관측 태그를 붙인다.

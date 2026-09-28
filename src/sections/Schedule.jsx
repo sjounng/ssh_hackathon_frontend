@@ -1,9 +1,14 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { PHASES, TIMETABLE } from '../content.js'
 import { getCurrentPhase } from '../lib/schedule.js'
 import Ph from '../components/Ph.jsx'
 
 export default function Schedule() {
-  const current = getCurrentPhase()
+  // "진행 중" 단계는 방문자 브라우저의 현재 시각으로 계산한다
+  const [current, setCurrent] = useState(-1)
+  useEffect(() => setCurrent(getCurrentPhase()), [])
 
   return (
     <section className="section" id="schedule" data-diamond="5">
