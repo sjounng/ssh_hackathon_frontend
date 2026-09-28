@@ -95,10 +95,10 @@ function Backdrop() {
             float swB = sin(t * .14 + 2.) * .08 + sin(t * .36 + .4) * .03;
             float swC = sin(t * .21 + 4.) * .08 + sin(t * .41 + 2.7) * .03;
             vec2 drift = vec2(sin(t * .10), cos(t * .085)) * .04;
-            col += beam(p, vec2(-.30, 1.30) + drift,                   // 좌상단 밖: Hanyang Blue
-              uA * 1.4,  vec3(.03, .01, .16), vec3(.0, .07, .14), .24 + sin(t * .24) * .02, swA, 1.);
-            col += beam(p, vec2(.55, -.45) + drift.yx * vec2(1.5, .5), // 하단 밖: Sogang Red
-              uB * 1.05, vec3(.16, .0, .04),  vec3(.2, .04, .0), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
+            col += beam(p, vec2(-.30, 1.30) + drift,                   // 좌상단 밖: Sogang Red
+              uB * 1.05, vec3(.16, .0, .04),  vec3(.2, .04, .0), .24 + sin(t * .24) * .02, swA, 1.);
+            col += beam(p, vec2(.55, -.45) + drift.yx * vec2(1.5, .5), // 하단 밖: Hanyang Blue
+              uA * 1.4,  vec3(.03, .01, .16), vec3(.0, .07, .14), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
             col += beam(p, vec2(1.35, .95) - drift,                    // 우상단 밖: SKKU Green
               uC * 2.1,  vec3(.0, .055, .045), vec3(.04, .08, .0), .27 + sin(t * .25 + 2.) * .02, swC, 13.);
             col = col / (1. + col * .9); // 부드러운 톤 압축
@@ -435,10 +435,10 @@ export default function Scene() {
       {/* 외부 HDRI 대신 로컬 라이트포머로 반사 환경 구성: 날카로운 면에 흰 반사가 또렷하게 맺히도록 */}
       <Environment resolution={256}>
         {/* 빔과 같은 방향에 같은 계열 색 조명을 둬서, 면이 향한 쪽에 따라 다른 색이 반사되게 한다 */}
-        <Lightformer form="rect" color="#2f6fe0" intensity={1.1} position={[-6, 5, 2]} scale={[7, 2.5, 1]} />
-        <Lightformer form="rect" color="#5a2fd0" intensity={0.55} position={[-7, 0, -2]} scale={[4, 2, 1]} />
-        <Lightformer form="rect" color="#e0231a" intensity={1.1} position={[1, -6, 2]} scale={[8, 2.5, 1]} />
-        <Lightformer form="rect" color="#e0681a" intensity={0.45} position={[-3, -5, -3]} scale={[4, 2, 1]} />
+        <Lightformer form="rect" color="#e0231a" intensity={1.1} position={[-6, 5, 2]} scale={[7, 2.5, 1]} />
+        <Lightformer form="rect" color="#e0681a" intensity={0.45} position={[-7, 0, -2]} scale={[4, 2, 1]} />
+        <Lightformer form="rect" color="#2f6fe0" intensity={1.1} position={[1, -6, 2]} scale={[8, 2.5, 1]} />
+        <Lightformer form="rect" color="#5a2fd0" intensity={0.55} position={[-3, -5, -3]} scale={[4, 2, 1]} />
         <Lightformer form="rect" color="#1fb57a" intensity={1.1} position={[7, 4, 1]} scale={[7, 2.5, 1]} />
         <Lightformer form="rect" color="#1a9aa0" intensity={0.55} position={[6, -1, -3]} scale={[4, 2, 1]} />
         <Lightformer form="rect" color="#ffffff" intensity={0.5} position={[0, 3, 6]} scale={[6, 1, 1]} />
