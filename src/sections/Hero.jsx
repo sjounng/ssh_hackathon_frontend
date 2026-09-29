@@ -7,27 +7,19 @@ export default function Hero() {
   return (
     <section className="hero" id="top">
       <div className="hero-copy">
-        <p className="eyebrow mono">{EVENT.eyebrow}</p>
-        <h1>
-          {EVENT.headline[0]}
-          <br />
-          <em>{EVENT.headline[1]}</em>
-        </h1>
+        <p className="hero-kicker">{EVENT.eyebrow}</p>
+        <h1><Ph>{EVENT.name}</Ph></h1>
       </div>
 
       <div className="hero-side">
-        <p className="hero-name"><Ph>{EVENT.name}</Ph></p>
         <dl className="hero-meta">
           <div><dt>일시</dt><dd><Ph>{EVENT.date}</Ph></dd></div>
           <div><dt>장소</dt><dd><Ph>{EVENT.venue}</Ph></dd></div>
           <div>
             <dt>주최</dt>
-            <dd className="hosts">
-              {HOSTS.map((h) => (
-                <span key={h.key}><i className={`dot ${h.key}`} />{h.short}</span>
-              ))}
-            </dd>
+            <dd>{HOSTS.map((h) => h.short).join(' · ')}</dd>
           </div>
+          <div><dt>모집</dt><dd><Ph>{EVENT.capacity}</Ph></dd></div>
         </dl>
         <div className="actions">
           <ApplyButton />

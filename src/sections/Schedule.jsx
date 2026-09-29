@@ -13,7 +13,6 @@ export default function Schedule() {
   return (
     <section className="section" id="schedule" data-diamond="5">
       <div className="section-head">
-        <p className="eyebrow mono">OBJ-05 — Schedule</p>
         <h2>행사 일정</h2>
       </div>
 
@@ -23,7 +22,6 @@ export default function Schedule() {
             <span className="phase-dot" />
             <span className="phase-label">{p.label}</span>
             <span className="phase-date mono"><Ph>{p.date}</Ph></span>
-            {i === current && <span className="chip mono now-chip">진행 중</span>}
           </li>
         ))}
       </ol>

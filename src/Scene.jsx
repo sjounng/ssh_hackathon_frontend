@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Edges, Environment, Float, Lightformer, MeshTransmissionMaterial, PerformanceMonitor, Sparkles, useFBO } from '@react-three/drei'
+import { Environment, Float, Lightformer, MeshTransmissionMaterial, PerformanceMonitor, Sparkles, useFBO } from '@react-three/drei'
 import { Bloom, EffectComposer, SMAA } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import { hud } from './lib/hud.js'
@@ -50,7 +50,9 @@ function Backdrop() {
           vec3 beam(vec2 p, vec2 c, vec3 coreCol, vec3 edgeCol, vec3 farCol, float halfAngle, float sway, float seed){
             vec2 asp = vec2(uAspect, 1.);
             vec2 q = (p - c) * asp;
-            float d = length(q);
+            // 배경판이 커서 광원 지점 자체가 판 안에 들어온다. 그 지점에서 q / d 가 0으로 나누기가 되어
+            // NaN이 생기면 빛 번짐(Bloom)을 타고 화면 전체가 검게/단색으로 덮이므로 최솟값을 둔다
+            float d = max(length(q), 1e-3);
             vec2 axis = normalize((vec2(.5) - c) * asp);
             float s = sin(sway), k = cos(sway);
             axis = vec2(axis.x * k - axis.y * s, axis.x * s + axis.y * k);
@@ -79,7 +81,8 @@ function Backdrop() {
 
             // 빔 안을 고르게 채우는 성분(.1)은 작게, 축으로 모이는 성분(pow 2.2)을 크게: 겹쳐도 화면이 뿌옇게 덮이지 않는다
             vec3 light = tint * (.04 + pow(max(1. - r, 0.), 3.) * 1.) * shafts + tint * hot * .4;
-            return light * inside * fall;
+            // 광원 바로 근처는 빛이 한 점으로 모여 과하게 밝아지므로 부드럽게 사라지게 한다
+            return light * inside * fall * smoothstep(.02, .35, d);
           }
 
           void main(){
@@ -98,7 +101,7 @@ function Backdrop() {
             col += beam(p, vec2(-.30, 1.30) + drift,                   // 좌상단 밖: Sogang Red
               uB * 1.05, vec3(.16, .0, .04),  vec3(.2, .04, .0), .24 + sin(t * .24) * .02, swA, 1.);
             col += beam(p, vec2(.55, -.45) + drift.yx * vec2(1.5, .5), // 하단 밖: Hanyang Blue
-              uA * 1.4,  vec3(.03, .01, .16), vec3(.0, .07, .14), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
+              uA * 1.95, vec3(.04, .014, .22), vec3(.0, .10, .2), .26 + sin(t * .22 + 1.) * .02, swB, 7.);
             col += beam(p, vec2(1.35, .95) - drift,                    // 우상단 밖: SKKU Green
               uC * 2.1,  vec3(.0, .055, .045), vec3(.04, .08, .0), .27 + sin(t * .25 + 2.) * .02, swC, 13.);
             col = col / (1. + col * .9); // 부드러운 톤 압축
@@ -112,6 +115,7 @@ function Backdrop() {
 
             col *= max(.25, 1. - .45 * length(p - .5));        // 비네팅
             col += (hash(gl_FragCoord.xy) - .5) * .006; // 밴딩 방지 그레인
+            col = clamp(col, 0., 8.);                      // 음수·과도한 값이 후처리로 번지지 않게
             gl_FragColor = vec4(col, 1.);
             #include <colorspace_fragment>
           }`,
@@ -172,6 +176,44 @@ function StarField({ count = isMobile ? 500 : 1400 }) {
   )
 }
 
+// 커팅 모서리 하이라이트.
+// 화면 위에 선을 따로 그리면(Line) 대각선에서 픽셀 계단이 생기고 회전할 때 자글거린다.
+// 대신 면 위에서 "가장 가까운 모서리까지의 거리(픽셀)"를 무게중심 좌표로 계산해 선을 칠한다.
+// 선 가장자리가 픽셀 단위로 부드럽게 흐려져 어느 각도에서도 계단이 생기지 않는다.
+const edgeGeometry = (() => {
+  const g = new THREE.OctahedronGeometry(1, 0) // 삼각형 8개, 모든 변이 실제 모서리
+  const n = g.attributes.position.count
+  const bary = new Float32Array(n * 3)
+  for (let i = 0; i < n; i++) bary[i * 3 + (i % 3)] = 1
+  g.setAttribute('bary', new THREE.BufferAttribute(bary, 3))
+  return g
+})()
+
+function makeEdgeMaterial(opacity) {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    // 유리 면과 같은 깊이에 겹치므로 살짝 앞으로 당겨 깜빡임(z-fighting)을 막는다
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
+    // 모서리는 맞닿은 두 면이 각자 자기 쪽에 칠하므로, 한쪽 폭(uWidth)은 원하는 두께의 절반으로 둔다
+    uniforms: { uOpacity: { value: opacity }, uWidth: { value: 0.58 }, uSoft: { value: 0.55 } },
+    vertexShader: 'attribute vec3 bary; varying vec3 vB; void main(){ vB = bary; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+    fragmentShader: `
+      uniform float uOpacity, uWidth, uSoft; varying vec3 vB;
+      void main(){
+        vec3 px = vB / fwidth(vB);                 // 각 변까지의 거리(픽셀 단위)
+        float d = min(min(px.x, px.y), px.z);
+        float line = 1. - smoothstep(uWidth - uSoft, uWidth + uSoft, d); // 두 면 합쳐 약 1px + 가장자리만 살짝 흐리게
+        gl_FragColor = vec4(vec3(1.), line * uOpacity);
+      }`,
+  })
+}
+const edgeMaterialMain = makeEdgeMaterial(0.5)
+const edgeMaterial = makeEdgeMaterial(0.3)
+
 function Diamond({ d, buffer, groupRef, spinRef, shellRef }) {
   const h = d.size * 1.8
   return (
@@ -198,8 +240,8 @@ function Diamond({ d, buffer, groupRef, spinRef, shellRef }) {
           temporalDistortion={0}
           color="#ffffff"
         />
-        {/* 커팅된 모서리: 면과 면이 만나는 선에 가는 하이라이트 */}
-        <Edges threshold={10} lineWidth={1.25} color={[1.6, 1.6, 1.7]} transparent opacity={d.main ? 0.35 : 0.18} toneMapped={false} />
+        {/* 커팅된 모서리: 앞면 모서리만 부드러운 가는 하이라이트로 (뒤쪽 모서리는 겹쳐 보여 산만해서 그리지 않는다) */}
+        <mesh geometry={edgeGeometry} material={d.main ? edgeMaterialMain : edgeMaterial} />
       </mesh>
       </group>
     </group>
@@ -412,7 +454,7 @@ function Effects() {
 const MAX_DPR = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, isMobile ? 1.25 : 1.5)
 
 export default function Scene() {
-  // 프레임이 떨어지면 해상도를 자동으로 낮추고, 여유가 생기면 다시 올린다
+  // 프레임이 떨어지면 해상도를 자동으로 낮춘다
   const [dpr, setDpr] = useState(MAX_DPR)
   const diamondRefs = useRef([])
   return (
@@ -421,10 +463,11 @@ export default function Scene() {
       camera={{ position: [0, 0, 7], fov: 40, near: 0.01 }}
       gl={{ antialias: false, powerPreference: 'high-performance' }}
     >
+      {/* 프레임이 떨어지면 해상도를 한 단계씩 내린다. 다시 올리지는 않는다:
+          해상도가 오르내릴 때마다 캔버스·버퍼를 새로 만들며 검은 프레임이 잠깐씩 생기기 때문 */}
       <PerformanceMonitor
         onDecline={() => setDpr((d) => Math.max(0.75, d - 0.25))}
-        onIncline={() => setDpr((d) => Math.min(MAX_DPR, d + 0.25))}
-        flipflops={4}
+        flipflops={2}
         onFallback={() => setDpr(1)}
       />
       <Backdrop />
@@ -439,7 +482,7 @@ export default function Scene() {
         {/* 빔과 같은 방향에 같은 계열 색 조명을 둬서, 면이 향한 쪽에 따라 다른 색이 반사되게 한다 */}
         <Lightformer form="rect" color="#e0231a" intensity={1.1} position={[-6, 5, 2]} scale={[7, 2.5, 1]} />
         <Lightformer form="rect" color="#e0681a" intensity={0.45} position={[-7, 0, -2]} scale={[4, 2, 1]} />
-        <Lightformer form="rect" color="#2f6fe0" intensity={1.1} position={[1, -6, 2]} scale={[8, 2.5, 1]} />
+        <Lightformer form="rect" color="#2f6fe0" intensity={1.45} position={[1, -6, 2]} scale={[8, 2.5, 1]} />
         <Lightformer form="rect" color="#5a2fd0" intensity={0.55} position={[-3, -5, -3]} scale={[4, 2, 1]} />
         <Lightformer form="rect" color="#1fb57a" intensity={1.1} position={[7, 4, 1]} scale={[7, 2.5, 1]} />
         <Lightformer form="rect" color="#1a9aa0" intensity={0.55} position={[6, -1, -3]} scale={[4, 2, 1]} />

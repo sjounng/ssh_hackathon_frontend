@@ -7,13 +7,12 @@ export default function FeaturePage({ id }) {
   return (
     <main className="page">
       <div className="page-inner">
-        <p className="eyebrow mono">{page.code}</p>
         <h1>{page.title}</h1>
         <p className="lede">{page.desc}</p>
         <div className="glass page-card">
           <div className="page-card-head">
             <h2>이 페이지에 들어갈 기능</h2>
-            <span className="chip mono">준비 중</span>
+            <span className="note">준비 중</span>
           </div>
           <ul>
             {page.items.map((item) => <li key={item}>{item}</li>)}
