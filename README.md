@@ -35,7 +35,10 @@ npm run start   # 빌드 결과 실행
 
 ## 배포
 
-Vercel에 배포되어 있다. `main` 브랜치에 푸시하면 자동으로 다시 배포된다(GitHub 연동 시).
+Vercel에 배포되어 있다: https://ssh-hackathon-frontend.vercel.app
+
+- `main` 브랜치에 푸시하면 자동으로 운영 사이트에 배포된다.
+- 다른 브랜치에 푸시하거나 PR을 열면 미리보기 주소가 따로 만들어진다.
 
 ## 사용 라이브러리
 
