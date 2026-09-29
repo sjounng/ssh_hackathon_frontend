@@ -136,6 +136,10 @@ mark.ph { background: none; color: inherit; }
 .nav.faded { opacity: 0; filter: blur(10px); transform: translateY(-6px) scale(0.98); pointer-events: none; }
 /* 키보드로 네브바에 초점이 오면 다시 보이게 */
 .nav.faded:focus-within { opacity: 1; filter: none; transform: none; pointer-events: auto; }
+/* 모바일: 가장자리 여백이 좁아 마름모 표시를 두지 않으므로, 네브바는 사라지지 않고 계속 보인다 */
+@media (max-width: 860px) {
+  .nav.faded { opacity: 1; filter: none; transform: none; pointer-events: auto; }
+}
 .nav > * { position: relative; }
 /* 스크롤해서 글 위에 올라가면 읽히도록 아주 살짝만 어둡게 (흰 기운은 넣지 않는다) */
 .nav.scrolled { --nav-fill: rgba(6, 8, 12, 0.18); }
@@ -403,6 +407,7 @@ h3 { font-size: 20px; font-weight: 600; }
 }
 @media (max-width: 860px) {
   .hud { display: none; } /* 모바일은 유성이 글 뒤에 깔려 HUD는 생략 */
+  .page-indicator { display: none; } /* 가장자리 여백이 좁아 카드와 겹치므로 생략 */
   .hero-side { left: var(--gutter); right: var(--gutter); top: auto; bottom: 28px; width: auto; }
   .hero-copy { top: 96px; bottom: auto; }
   .hero-meta { margin-bottom: 16px; }
