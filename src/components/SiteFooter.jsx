@@ -10,12 +10,12 @@ export default function SiteFooter() {
           <p className="footer-name"><Ph>{EVENT.name}</Ph></p>
           <p className="footer-hosts">
             {HOSTS.map((h) => (
-              <span key={h.key}><i className={`dot ${h.key}`} />{h.name}</span>
+              <span key={h.key}>{h.name}</span>
             ))}
           </p>
         </div>
         <div className="footer-links">
-          <p className="eyebrow mono">문의</p>
+          <p className="label">문의</p>
           {FOOTER.contacts.map((c) => (
             <a key={c.label} href={c.href}><Ph>{c.label}</Ph></a>
           ))}

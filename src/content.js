@@ -1,15 +1,15 @@
 // 랜딩 페이지의 모든 문구와 일정 설정.
 // 문구는 이 파일만 고치면 된다. 대괄호([ ])로 감싼 값은 아직 정해지지 않은 자리표시이며,
-// 화면에서 점선 밑줄로 표시되어 교체할 곳을 쉽게 찾을 수 있다.
+// 화면에도 대괄호째 보이므로 교체할 곳을 쉽게 찾을 수 있다.
 // 날짜 값(ISO 형식)은 신청 버튼 활성화와 "현재 단계" 표시에 쓰이므로 실제 일정이 정해지면 함께 바꾼다.
 
 export const EVENT = {
   name: '[행사명]',
   eyebrow: '한양대 × 성균관대 × 서강대 연합 해커톤',
-  headline: ['Three schools,', 'one light.'], // 두 번째 줄은 외곽선 글씨로 표시된다
   summary: '[행사를 한두 문장으로 소개하는 문구]',
   date: '[YYYY.MM.DD (요일) – MM.DD (요일)]',
   venue: '[장소]',
+  capacity: '[N]명 · [N]시간',
 }
 
 // 주최 학교. domain이 null이면 "확정 예정"으로 표시된다 (기획서 개요 > 로그인 허용 Google 계정)
@@ -37,6 +37,17 @@ export const NAV = [
   { href: '/review', label: '심사', access: 'judge' },
   { href: '/results', label: '결과 발표', access: 'public' },
   { href: '/admin', label: '관리자', access: 'admin' },
+]
+
+// 메인 페이지 오른쪽의 페이지 표시(마름모). id는 각 섹션 요소의 id
+export const LANDING_PAGES = [
+  { id: 'top', label: '메인' },
+  { id: 'about', label: '소개' },
+  { id: 'prizes', label: '상금·혜택' },
+  { id: 'eligibility', label: '참가 자격' },
+  { id: 'review', label: '평가 방식' },
+  { id: 'schedule', label: '일정' },
+  { id: 'join', label: '참가 신청' },
 ]
 
 // 기능 페이지 소개 (아직 기능이 구현되지 않은 페이지에 "준비 중"과 함께 표시)
@@ -108,24 +119,19 @@ export const ABOUT = {
     title: '[해커톤 주제]',
     desc: '[주제 설명 — 어떤 문제를 풀면 되는지]',
   },
-  stats: [
-    { value: '3', label: '주최 학교' },
-    { value: '[N]', label: '모집 인원' },
-    { value: '[N]시간', label: '해커톤 진행' },
-  ],
 }
 
 export const PRIZES = {
   awards: [
-    { rank: '대상', amount: '[금액]', count: '[N]팀', highlight: true },
-    { rank: '최우수상', amount: '[금액]', count: '[N]팀' },
-    { rank: '우수상', amount: '[금액]', count: '[N]팀' },
+    { rank: '대상', amount: '[금액]', highlight: true },
+    { rank: '최우수상', amount: '[금액]' },
+    { rank: '우수상', amount: '[금액]' },
   ],
   benefits: ['[참가자 전원 혜택 1]', '[참가자 전원 혜택 2]', '[참가자 전원 혜택 3]'],
 }
 
 export const ELIGIBILITY = {
-  intro: '주최 학교의 Google 계정으로 로그인하면 누구나 신청할 수 있습니다. 로그인한 계정의 도메인으로 소속 학교를 확인합니다.',
+  intro: '주최 학교의 Google 계정으로 로그인하면 누구나 신청할 수 있습니다.',
   tracks: [
     {
       key: 'team',
@@ -213,7 +219,7 @@ export const TIMETABLE = [
 
 export const CTA = {
   title: '[신청을 유도하는 마무리 문구]',
-  sub: '주최 학교 Google 계정만 있으면 바로 신청할 수 있습니다.',
+  sub: '[신청 안내 보조 문구]',
 }
 
 export const FOOTER = {

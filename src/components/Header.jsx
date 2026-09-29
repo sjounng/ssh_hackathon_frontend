@@ -15,21 +15,32 @@ export default function Header() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [away, setAway] = useState(false)
+  const isLanding = pathname === '/'
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40)
+      // 메인 페이지는 첫 화면에서만 네브바를 보여준다: 첫 화면을 40% 넘게 벗어나면 배경에 녹아들며 사라진다
+      setAway(window.scrollY > window.innerHeight * 0.4)
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [pathname])
 
   // 페이지를 옮기면 모바일 메뉴를 닫는다
   useEffect(() => setOpen(false), [pathname])
 
   const items = NAV.filter((n) => VIEWER_ACCESS.includes(n.access))
+  const hidden = isLanding && away && !open
 
   return (
-    <header className={`nav ${scrolled ? 'scrolled' : ''} ${open ? 'open' : ''}`}>
+    <header className={`nav ${scrolled ? 'scrolled' : ''} ${open ? 'open' : ''} ${hidden ? 'faded' : ''}`}>
       <Link className="logo" href="/">
         <span className="dot hy" /><span className="dot sk" /><span className="dot sg" />
         <span className="logo-text"><Ph>{EVENT.name}</Ph></span>
