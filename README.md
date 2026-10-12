@@ -49,6 +49,13 @@ npm run start   # 빌드 결과 실행
 3. `.env.example`을 `.env.local`로 복사해 값을 채운다. 운영은 Vercel 환경변수에 같은 이름으로 넣는다
 4. 운영진 계정 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';`
 
+### 연결 점검
+
+```bash
+npm run check:db      # Supabase 연결, 테이블·함수·버킷 확인 (키 값은 출력하지 않음)
+npm run smoke:apply   # 실제 DB에서 팀 신청 흐름을 돌리고 테스트 데이터를 지움
+```
+
 ### DB 규칙 테스트
 
 참가 신청 규칙은 DB 함수(`supabase/migrations/0002_apply.sql`)에 있고, 로컬 Postgres로 시험할 수 있다.
