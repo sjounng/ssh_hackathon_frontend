@@ -203,6 +203,29 @@ mark.ph { background: none; color: inherit; }
 }
 .pi-dot:hover .pi-label, .pi-dot:focus-visible .pi-label { opacity: 1; transform: translate(0, -50%); }
 
+/* ---------- 폼 ---------- */
+.page-inner.narrow { max-width: 560px; }
+.form { display: grid; gap: 20px; }
+.field { display: grid; gap: 8px; }
+.field-label { font-size: 14px; color: var(--ink-soft); }
+.field-static { font-size: 15px; }
+.field input[type='text'], .field input[type='tel'], .field input[type='email'], .field textarea, .field select {
+  width: 100%; padding: 13px 16px; border-radius: 14px; font: inherit; font-size: 15px; color: #fff;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 1px 1px 0.5px rgba(255, 255, 255, 0.16);
+  transition: border-color 0.2s, background 0.2s;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-faint); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.07); }
+.check { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.5; cursor: pointer; }
+.check input { margin-top: 4px; width: 16px; height: 16px; accent-color: #fff; }
+.field-error, .form-error { font-size: 13px; color: #ff9a8f; }
+.form-error { margin: 0; font-size: 14px; }
+.page-inner > .form-error { margin-top: 24px; }
+.text-link { text-decoration: underline; text-underline-offset: 3px; color: var(--ink); }
+.btn[disabled] { opacity: 0.55; cursor: progress; }
+.login-form { margin-top: 32px; }
+
 /* ---------- 기능 페이지 (준비 중) ---------- */
 .page { position: relative; z-index: 1; min-height: 100svh; padding: 140px var(--gutter) 96px; }
 .page-inner { max-width: 720px; }

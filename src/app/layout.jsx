@@ -4,6 +4,7 @@ import Header from '../components/Header.jsx'
 import Hud from '../components/Hud.jsx'
 import LiquidGlassFilter from '../components/LiquidGlassFilter.jsx'
 import SiteFooter from '../components/SiteFooter.jsx'
+import { currentUser } from '../auth.js'
 import './globals.css'
 
 const unbounded = Unbounded({ subsets: ['latin'], weight: ['400', '600', '800'], variable: '--font-unbounded' })
@@ -19,7 +20,8 @@ export const viewport = {
   themeColor: '#050608',
 }
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const user = await currentUser()
   return (
     <html lang="ko" className={`${unbounded.variable} ${interTight.variable} ${jetbrains.variable}`}>
       <head>
@@ -34,7 +36,7 @@ export default function RootLayout({ children }) {
         <LiquidGlassFilter />
         <BackgroundScene />
         <Hud />
-        <Header />
+        <Header user={user ? { name: user.name, role: user.role } : null} />
         {children}
         <SiteFooter />
       </body>

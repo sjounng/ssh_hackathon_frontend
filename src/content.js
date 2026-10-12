@@ -52,18 +52,6 @@ export const LANDING_PAGES = [
 
 // 기능 페이지 소개 (아직 기능이 구현되지 않은 페이지에 "준비 중"과 함께 표시)
 export const PAGES = {
-  login: {
-    code: 'LOGIN',
-    title: '로그인',
-    desc: '주최 학교 Google 계정으로 로그인합니다. 계정 도메인으로 소속 학교를 확인합니다.',
-    items: ['학교 Google 계정 로그인 (허용 도메인이 아니면 차단)', '최초 로그인 시 프로필 입력 — 이름, 학번, 연락처, 필수 동의'],
-  },
-  me: {
-    code: 'ME',
-    title: '내 정보',
-    desc: '내 정보를 확인·수정하고 신청 상태를 확인합니다.',
-    items: ['내 정보 조회·수정', '신청 상태 확인 — 제출 완료 / 승인 / 거절'],
-  },
   apply: {
     code: 'APPLY',
     title: '참가 신청',

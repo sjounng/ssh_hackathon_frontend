@@ -33,6 +33,22 @@ npm run start   # 빌드 결과 실행
 - 전환 타이밍은 `Scene.jsx` 위쪽의 `T_OUT`, `T_HOLD`, `T_IN`, 유성이 화면에서 차지하는 비율은 `FILL`로 조절한다.
 - 후처리(`EffectComposer`)에서 MSAA(`multisampling`)는 켜지 말 것. GPU에 따라 에러 없이 화면 전체가 검게 나온다.
 
+## 백엔드 (로그인·데이터)
+
+- Next.js API 라우트(`src/app/api/`)가 백엔드. 서버를 따로 두지 않고 Vercel에 함께 배포된다.
+- 로그인: NextAuth(`src/auth.js`) + Google. 학교 도메인(`allowed_domains`) 또는 초청 목록(`invited_emails`) 계정만 통과
+- DB: Supabase. 서버만 service role 키로 접근하고, 모든 테이블은 RLS로 직접 접근을 막는다
+- 설계: [`docs/DB_DESIGN.md`](docs/DB_DESIGN.md), 테이블 SQL: [`supabase/migrations/`](supabase/migrations/)
+
+### 처음 설정
+
+1. Supabase 프로젝트를 만들고 SQL Editor에서 `supabase/migrations/0001_init.sql`을 실행
+2. Google Cloud Console에서 OAuth 클라이언트(웹 애플리케이션)를 만들고, 승인된 리디렉션 URI에 추가
+   - `http://localhost:3000/api/auth/callback/google`, `http://localhost:5173/api/auth/callback/google` (로컬)
+   - `https://ssh-hackathon-frontend.vercel.app/api/auth/callback/google` (운영)
+3. `.env.example`을 `.env.local`로 복사해 값을 채운다. 운영은 Vercel 환경변수에 같은 이름으로 넣는다
+4. 운영진 계정 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';`
+
 ## 배포
 
 Vercel에 배포되어 있다: https://ssh-hackathon-frontend.vercel.app
