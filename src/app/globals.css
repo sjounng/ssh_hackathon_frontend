@@ -307,7 +307,8 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* 떠오르는 목록·달력: 같은 유리에 흐림만 더한다 (뒤 글자와 겹쳐도 읽히게) */
 .popover {
-  position: fixed; z-index: 100; padding: 6px; border-radius: 18px;
+  /* 바깥 둥글기 = 버튼 둥글기 + 안쪽 여백: 안의 항목과 동심원으로 맞물린다 */
+  position: fixed; z-index: 100; padding: 6px; border-radius: calc(var(--anchor-r, 16px) + 6px);
   border: 0; background: var(--lg-float-fill);
   box-shadow: var(--lg-edge), 0 18px 40px rgba(0, 0, 0, 0.45);
   -webkit-backdrop-filter: blur(20px) saturate(1.7);
@@ -318,7 +319,7 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 .select-pop ul { max-height: 280px; overflow: auto; outline: none; }
 .select-pop li {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
-  padding: 9px 12px; border-radius: 12px; font-size: 14px; color: var(--ink-soft); cursor: pointer; white-space: nowrap;
+  padding: 9px 14px; border-radius: var(--anchor-r, 12px); font-size: 14px; color: var(--ink-soft); cursor: pointer; white-space: nowrap;
 }
 /* 고른 줄·커서 줄: 안쪽에 작은 유리 알약 */
 .select-pop li.active, .cal-grid button:hover, .cal-head button:hover { background: rgba(255, 255, 255, 0.07); color: #fff; box-shadow: var(--lg-edge); }

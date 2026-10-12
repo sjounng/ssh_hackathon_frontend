@@ -20,7 +20,9 @@ export default function Popover({ anchorRef, open, onClose, children, className 
       const below = window.innerHeight - a.bottom
       const top = below < h + 12 && a.top > below ? a.top - h - 6 : a.bottom + 6
       const left = Math.min(Math.max(8, a.left), window.innerWidth - w - 8)
-      setPos({ top, left, width: minWidth === 'anchor' ? a.width : undefined })
+      // 드롭다운 버튼의 실제 둥글기(알약이면 높이의 절반)를 넘겨, 펼친 창도 같은 모양으로 맞춘다
+      const r = Math.min(parseFloat(getComputedStyle(anchorRef.current).borderTopLeftRadius) || 0, a.height / 2)
+      setPos({ top, left, width: minWidth === 'anchor' ? a.width : undefined, r })
     }
     place()
     window.addEventListener('resize', place)
@@ -48,7 +50,7 @@ export default function Popover({ anchorRef, open, onClose, children, className 
     <div
       ref={popRef}
       className={`popover ${className}`}
-      style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth: pos?.width }}
+      style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth: pos?.width, '--anchor-r': pos ? `${pos.r}px` : undefined }}
     >
       {children}
     </div>,
