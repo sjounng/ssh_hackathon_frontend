@@ -309,7 +309,10 @@ mark.ph { background: none; color: inherit; }
 
 /* ---------- Hero ---------- */
 /* 페이지 전체 뒤에 고정된 3D 장면. 섹션들은 그 위를 스크롤한다 */
-.bg-canvas { position: fixed; inset: 0; z-index: 0; }
+.bg-canvas { position: fixed; inset: 0; z-index: 0; transition: filter 0.8s ease, transform 0.8s ease; }
+/* 메인 페이지(#top이 있는 페이지)가 아니면 배경을 흐리고 어둡게: 글에 집중할 수 있게.
+   흐림 때문에 가장자리가 비치지 않도록 살짝 키운다 */
+html:not(:has(#top)) .bg-canvas { filter: blur(16px) brightness(0.6) saturate(1.1); transform: scale(1.06); }
 main, .cta, .footer { position: relative; z-index: 1; }
 .hero { position: relative; height: 100svh; min-height: 640px; }
 .hero-copy, .hero-side { position: absolute; z-index: 2; }
