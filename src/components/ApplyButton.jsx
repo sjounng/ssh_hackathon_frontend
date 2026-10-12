@@ -8,7 +8,20 @@ import { formatMonthDay, getApplyStatus } from '../lib/schedule.js'
 export default function ApplyButton({ size }) {
   // 날짜 판단은 방문자 브라우저의 현재 시각으로 한다. 계산 전(첫 렌더)에는 자리만 잡아 둔다
   const [status, setStatus] = useState(null)
-  useEffect(() => setStatus(getApplyStatus()), [])
+  useEffect(() => {
+    let alive = true
+    fetch('/api/schedule')
+      .then((r) => r.json())
+      .then((s) => {
+        if (!alive) return
+        const fromDb = !s.unavailable && (s.applyOpenAt || s.applyCloseAt)
+        setStatus(getApplyStatus(new Date(), fromDb ? { openAt: s.applyOpenAt, closeAt: s.applyCloseAt } : undefined))
+      })
+      .catch(() => alive && setStatus(getApplyStatus()))
+    return () => {
+      alive = false
+    }
+  }, [])
   const cls = `btn ${size === 'lg' ? 'lg' : ''}`
 
   if (!status) {
@@ -19,7 +32,7 @@ export default function ApplyButton({ size }) {
     return (
       <a className={`${cls} primary`} href={APPLY.href}>
         참가 신청하기
-        <span className="btn-tag mono">D-{status.dday}</span>
+        {status.dday !== null && <span className="btn-tag mono">D-{status.dday}</span>}
       </a>
     )
   }

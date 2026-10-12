@@ -19,9 +19,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true
     },
     // 세션 토큰에 DB의 사용자 id·역할·프로필 완료 여부를 싣는다.
-    // 프로필을 아직 입력하지 않은 동안에는 요청마다 다시 읽어서, 입력을 마치면 바로 반영되게 한다
+    // 프로필 입력 전에는 요청마다, 그 뒤에는 1분마다 다시 읽어 역할 변경 등이 다시 로그인하지 않아도 반영되게 한다
     async jwt({ token, trigger }) {
-      if (trigger === 'signIn' || !token.uid || !token.profileCompleted) {
+      const stale = !token.checkedAt || Date.now() - token.checkedAt > 60_000
+      if (trigger === 'signIn' || !token.uid || !token.profileCompleted || stale) {
+        token.checkedAt = Date.now()
         const u = await getUserByEmail(token.email.toLowerCase())
         if (u) {
           token.uid = u.id

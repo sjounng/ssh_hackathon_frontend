@@ -249,6 +249,54 @@ mark.ph { background: none; color: inherit; }
   .inline-form { grid-template-columns: 1fr; }
 }
 
+/* ---------- 관리자 ---------- */
+.page-inner.admin { max-width: 1120px; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 24px 0 20px; }
+.admin-tabs button {
+  padding: 9px 16px; border-radius: 999px; font-size: 14px; color: var(--ink-soft);
+  border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.03);
+}
+.admin-tabs button.active { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.35); }
+.admin-section { display: grid; gap: 16px; }
+.admin-toolbar, .admin-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.admin-filters { justify-content: flex-start; }
+.admin-section select, .admin-section input[type='email'], .admin-section input[type='text'], .admin-section input[type='search'], .admin-section input[type='number'], .admin-section input[type='datetime-local'] {
+  padding: 9px 12px; border-radius: 12px; font: inherit; font-size: 14px; color: #fff; color-scheme: dark;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.admin-list { padding: 8px 20px; }
+.admin-row { border-top: 1px solid var(--line); }
+.admin-row:first-child { border-top: 0; }
+.admin-row-main { display: grid; grid-template-columns: auto minmax(160px, 1.2fr) 1fr auto auto; align-items: center; gap: 14px; padding: 12px 0; }
+.admin-row-title { text-align: left; font-weight: 600; font-size: 15px; }
+.admin-row-title.static { cursor: default; }
+.admin-row-sub { font-size: 14px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-detail { padding: 0 0 14px 32px; display: grid; gap: 12px; }
+.admin-detail .rows > div { grid-template-columns: 140px 1fr; padding: 8px 0; }
+.pre { white-space: pre-wrap; }
+.status { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: var(--ink-soft); white-space: nowrap; }
+.status.s-approved { color: #8fe0b0; }
+.status.s-rejected { color: #ff9a8f; }
+.status.s-submitted { color: #fff; }
+.empty { padding: 16px 0; }
+.order { color: var(--ink-faint); }
+.order-buttons { display: flex; gap: 4px; }
+.admin-assign { grid-template-columns: minmax(300px, 1fr) 1.2fr; align-items: start; }
+.assigned-teams { display: grid; gap: 16px; }
+.pick-list, .member-list { display: grid; margin-top: 10px; }
+.pick-list li, .member-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.pick-list li:first-child, .member-list li:first-child { border-top: 0; }
+.assign-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); gap: 14px; }
+.track-size.warn { color: #ff9a8f; }
+.schedule-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0 20px; }
+.invite-form { display: grid; grid-template-columns: 1.4fr auto 1fr auto; gap: 8px; margin-top: 12px; }
+.search { max-width: 240px; }
+@media (max-width: 860px) {
+  .admin-assign, .schedule-grid, .invite-form { grid-template-columns: 1fr; }
+  .admin-row-main { grid-template-columns: auto 1fr auto; }
+  .admin-row-sub { display: none; }
+}
+
 /* ---------- 기능 페이지 (준비 중) ---------- */
 .page { position: relative; z-index: 1; min-height: 100svh; padding: 140px var(--gutter) 96px; }
 .page-inner { max-width: 720px; }

@@ -47,7 +47,7 @@ npm run start   # 빌드 결과 실행
    - `http://localhost:3000/api/auth/callback/google`, `http://localhost:5173/api/auth/callback/google` (로컬)
    - `https://ssh-hackathon-frontend.vercel.app/api/auth/callback/google` (운영)
 3. `.env.example`을 `.env.local`로 복사해 값을 채운다. 운영은 Vercel 환경변수에 같은 이름으로 넣는다
-4. 운영진 계정 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';`
+4. 첫 운영진 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';` (그 뒤로는 관리자 페이지 > 계정에서 지정)
 
 ### 연결 점검
 
@@ -63,6 +63,7 @@ npm run smoke:apply   # 실제 DB에서 팀 신청 흐름을 돌리고 테스트
 ```bash
 # 빈 DB에 마이그레이션을 적용한 뒤
 psql -f supabase/tests/apply_test.sql   # 끝까지 가면 'ALL APPLY TESTS PASSED'
+psql -f supabase/tests/admin_test.sql   # 'ALL ADMIN TESTS PASSED' (새 DB에서)
 ```
 
 ## 배포
