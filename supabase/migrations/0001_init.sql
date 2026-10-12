@@ -206,6 +206,25 @@ alter table scores          enable row level security;
 alter table awards          enable row level security;
 alter table email_logs      enable row level security;
 
+-- ───────────────────────── 테이블 권한 ─────────────────────────
+-- Supabase에서 "Automatically expose new tables"를 끄면 새 테이블 권한이 자동으로 주어지지 않는다.
+-- 서버용 service_role에만 직접 주고, 공개 역할(anon, authenticated)은 막는다.
+-- (로컬 Postgres처럼 이 역할들이 없는 환경에서는 건너뛴다)
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant usage on schema public to service_role;
+    grant select, insert, update, delete on all tables in schema public to service_role;
+    grant usage on all sequences in schema public to service_role;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    revoke all on all tables in schema public from anon;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    revoke all on all tables in schema public from authenticated;
+  end if;
+end $$;
+
 -- ───────────────────────── 파일 저장소 ─────────────────────────
 -- 비공개 버킷: 파일은 서버가 짧은 유효기간의 서명 URL을 만들어 내려준다.
 -- 버킷 한도는 큰 쪽(PDF 20MB)에 맞추고, 종류별 한도(이미지 5MB)는 서버에서 확인한다
