@@ -30,6 +30,14 @@
     inset -1px -1px 0.5px rgba(255, 255, 255, 0.1),  /* 오른쪽 아래 안쪽 반사 */
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
   --lg-drop: 0 10px 30px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.2);
+  /* ::after 반사선을 못 다는 입력칸용: 왼쪽 위·오른쪽 아래 반사를 한 겹 더 */
+  --lg-field-edge:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.34),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.18);
+  /* 떠오르는 유리(목록·달력·대화상자): 뒤가 비쳐도 글이 읽히도록 흐림을 더 준다 */
+  --lg-float-fill: rgba(14, 16, 22, 0.42);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -64,7 +72,8 @@ mark.ph { background: none; color: inherit; }
 
 /* ---------- 리퀴드 글래스 반사 테두리: 가장자리 1px 링에만 그린다 ----------
    (테두리 그라데이션을 배경에 깔면 투명한 안쪽으로 그대로 비쳐 하얗게 뜬다) */
-.btn::after, .nav::after, .nav-links a.active::after {
+.btn::after, .nav::after, .nav-links a.active::after,
+.select-trigger::after, .stepper::after, .admin-tabs button::after, .popover::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
   background: var(--lg-rim);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -209,16 +218,23 @@ mark.ph { background: none; color: inherit; }
 .field { display: grid; gap: 8px; }
 .field-label { font-size: 14px; color: var(--ink-soft); }
 .field-static { font-size: 15px; }
-.field input[type='text'], .field input[type='tel'], .field input[type='email'], .field textarea, .field select {
-  width: 100%; padding: 13px 16px; border-radius: 14px; font: inherit; font-size: 15px; color: #fff;
-  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: inset 1px 1px 0.5px rgba(255, 255, 255, 0.16);
-  transition: border-color 0.2s, background 0.2s;
+/* 입력칸: 버튼과 같은 리퀴드 글래스. input에는 ::after를 못 붙이므로 반사선은 안쪽 그림자(--lg-edge)를 조금 진하게 써서 낸다 */
+.field input[type='text'], .field input[type='tel'], .field input[type='email'], .field textarea,
+.admin-section input[type='email'], .admin-section input[type='text'] {
+  width: 100%; padding: 13px 16px; border-radius: 16px; font: inherit; font-size: 15px; color: #fff;
+  border: 0; background: var(--lg-fill);
+  box-shadow: var(--lg-field-edge);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-bar) saturate(1.6);
+  transition: box-shadow 0.2s, background 0.2s;
 }
-.field input::placeholder, .field textarea::placeholder { color: var(--ink-faint); }
-.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.07); }
+.field input::placeholder, .field textarea::placeholder, .admin-section input::placeholder { color: var(--ink-faint); }
+.field input:focus, .field textarea:focus, .admin-section input:focus {
+  outline: none; background: rgba(255, 255, 255, 0.05);
+  box-shadow: var(--lg-field-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+.field textarea { -webkit-backdrop-filter: blur(3px) saturate(1.6); backdrop-filter: url(#lg-card) saturate(1.6); }
 .check { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.5; cursor: pointer; }
-.check input { margin-top: 4px; width: 16px; height: 16px; accent-color: #fff; }
 .field-error, .form-error { font-size: 13px; color: #ff9a8f; }
 .form-error { margin: 0; font-size: 14px; }
 .page-inner > .form-error { margin-top: 24px; }
@@ -249,21 +265,122 @@ mark.ph { background: none; color: inherit; }
   .inline-form { grid-template-columns: 1fr; }
 }
 
+/* ---------- 커스텀 입력 요소 (브라우저 기본 모양 대신) ---------- */
+/* 체크박스: 기본 상자를 감추고 직접 그린다 (접근성은 기본 input 그대로) */
+input[type='checkbox'] {
+  appearance: none; -webkit-appearance: none; flex: none;
+  width: 18px; height: 18px; margin: 0; border-radius: 6px; cursor: pointer;
+  border: 0; background: var(--lg-fill); box-shadow: var(--lg-field-edge);
+  display: inline-grid; place-items: center; transition: background 0.15s, box-shadow 0.15s;
+}
+input[type='checkbox']::after {
+  content: ''; width: 9px; height: 5px; margin-top: -2px; transform: rotate(-45deg) scale(0);
+  border-left: 1.8px solid #fff; border-bottom: 1.8px solid #fff; transition: transform 0.15s;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+/* 체크되면 흰 상자 대신 빛이 조금 더 찬 유리 */
+input[type='checkbox']:checked { background: rgba(255, 255, 255, 0.16); box-shadow: var(--lg-field-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.3); }
+input[type='checkbox']:checked::after { transform: rotate(-45deg) scale(1); }
+input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
+.check input { margin-top: 3px; }
+:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.6); outline-offset: 2px; }
+
+/* 드롭다운·날짜 선택 버튼: 버튼과 같은 리퀴드 글래스 (반사선은 맨 위 ::after 규칙) */
+.select-trigger {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 140px;
+  padding: 12px 16px; border-radius: 16px; font-size: 15px; color: #fff; text-align: left;
+  border: 0; background: var(--btn-fill); --btn-fill: var(--lg-fill);
+  box-shadow: var(--lg-edge), var(--lg-drop);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-pill) saturate(1.6);
+  transition: --btn-fill 0.2s;
+}
+.select-trigger.small { padding: 9px 14px; font-size: 14px; border-radius: 999px; min-width: 120px; }
+.select-trigger:hover:not(:disabled), .select-trigger.open { --btn-fill: rgba(255, 255, 255, 0.06); }
+.select-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.select-trigger .placeholder { color: var(--ink-faint); }
+.select-trigger .chevron { flex: none; color: var(--ink-soft); transition: transform 0.2s; }
+.select-trigger.open .chevron { transform: rotate(180deg); }
+.date-trigger .chevron { transform: none !important; }
+.field .select-trigger { width: 100%; backdrop-filter: url(#lg-bar) saturate(1.6); }
+
+/* 떠오르는 목록·달력: 같은 유리에 흐림만 더한다 (뒤 글자와 겹쳐도 읽히게) */
+.popover {
+  position: fixed; z-index: 100; padding: 6px; border-radius: 18px;
+  border: 0; background: var(--lg-float-fill);
+  box-shadow: var(--lg-edge), 0 18px 40px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  backdrop-filter: blur(18px) url(#lg-card) saturate(1.7);
+  animation: pop-in 0.14s ease-out;
+}
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } }
+.select-pop ul { max-height: 280px; overflow: auto; outline: none; }
+.select-pop li {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 9px 12px; border-radius: 12px; font-size: 14px; color: var(--ink-soft); cursor: pointer; white-space: nowrap;
+}
+/* 고른 줄·커서 줄: 안쪽에 작은 유리 알약 */
+.select-pop li.active, .cal-grid button:hover, .cal-head button:hover { background: rgba(255, 255, 255, 0.07); color: #fff; box-shadow: var(--lg-edge); }
+.select-pop li.selected { color: #fff; font-weight: 600; }
+.date-pop { padding: 14px; width: 300px; }
+.cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 600; }
+.cal-head button { width: 30px; height: 30px; border-radius: 999px; font-size: 18px; color: var(--ink-soft); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-week { font-size: 12px; color: var(--ink-faint); padding: 4px 0; }
+.cal-grid button { height: 34px; border-radius: 999px; font-size: 14px; color: var(--ink-soft); }
+.cal-grid button.today { color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+.cal-grid button.selected, .cal-grid button.selected:hover {
+  color: #fff; font-weight: 700; background: rgba(255, 255, 255, 0.18);
+  box-shadow: var(--lg-field-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.cal-time { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.cal-time .select-trigger { min-width: 0; }
+.cal-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 12px; }
+
+/* 숫자 −/+ : 버튼 하나처럼 보이는 유리 알약 */
+.stepper {
+  position: relative; display: inline-flex; align-items: center; border-radius: 999px;
+  background: var(--lg-fill); box-shadow: var(--lg-edge), var(--lg-drop);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-pill) saturate(1.6);
+}
+.stepper button { width: 42px; height: 44px; border-radius: 999px; font-size: 18px; color: var(--ink-soft); }
+.stepper button:hover:not(:disabled) { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.stepper button:disabled { opacity: 0.3; cursor: not-allowed; }
+.field .stepper { justify-self: start; }
+.stepper output { min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* 확인 대화상자: 패널(.glass)과 같은 잘린 모서리 유리 + 떠오르는 유리의 흐림 */
+.dialog-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(3px); animation: pop-in 0.15s ease-out; }
+.glass.dialog {
+  --cut: 22px; max-width: 420px; width: 100%; padding: 28px;
+  background: var(--lg-float-fill);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  backdrop-filter: blur(18px) url(#lg-card) saturate(1.7);
+}
+.dialog p { font-size: 16px; line-height: 1.6; margin-bottom: 22px; }
+.dialog .actions { justify-content: flex-end; }
+.btn.primary.danger { --btn-fill: rgba(255, 90, 80, 0.3); }
+
 /* ---------- 관리자 ---------- */
 .page-inner.admin { max-width: 1120px; }
 .admin-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 24px 0 20px; }
 .admin-tabs button {
-  padding: 9px 16px; border-radius: 999px; font-size: 14px; color: var(--ink-soft);
-  border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.03);
+  position: relative; padding: 9px 16px; border-radius: 999px; font-size: 14px; color: var(--ink-soft);
+  background: var(--btn-fill); --btn-fill: var(--lg-fill);
+  box-shadow: var(--lg-edge);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6);
+  backdrop-filter: url(#lg-pill) saturate(1.6);
+  transition: --btn-fill 0.2s, color 0.2s;
 }
-.admin-tabs button.active { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.35); }
+.admin-tabs button:not(.active)::after { opacity: 0.45; }
+.admin-tabs button:hover { color: #fff; --btn-fill: rgba(255, 255, 255, 0.04); }
+.admin-tabs button.active { color: #fff; --btn-fill: rgba(255, 255, 255, 0.09); box-shadow: var(--lg-edge), var(--lg-drop); }
 .admin-section { display: grid; gap: 16px; }
+.admin-section input[type='email'], .admin-section input[type='text'] { padding: 10px 14px; border-radius: 999px; font-size: 14px; }
 .admin-toolbar, .admin-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .admin-filters { justify-content: flex-start; }
-.admin-section select, .admin-section input[type='email'], .admin-section input[type='text'], .admin-section input[type='search'], .admin-section input[type='number'], .admin-section input[type='datetime-local'] {
-  padding: 9px 12px; border-radius: 12px; font: inherit; font-size: 14px; color: #fff; color-scheme: dark;
-  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.16);
-}
 .admin-list { padding: 8px 20px; }
 .admin-row { border-top: 1px solid var(--line); }
 .admin-row:first-child { border-top: 0; }
@@ -274,7 +391,7 @@ mark.ph { background: none; color: inherit; }
 .admin-detail { padding: 0 0 14px 32px; display: grid; gap: 12px; }
 .admin-detail .rows > div { grid-template-columns: 140px 1fr; padding: 8px 0; }
 .pre { white-space: pre-wrap; }
-.status { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: var(--ink-soft); white-space: nowrap; }
+.status { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); box-shadow: var(--lg-edge); color: var(--ink-soft); white-space: nowrap; }
 .status.s-approved { color: #8fe0b0; }
 .status.s-rejected { color: #ff9a8f; }
 .status.s-submitted { color: #fff; }

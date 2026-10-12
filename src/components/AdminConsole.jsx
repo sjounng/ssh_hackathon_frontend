@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from 'react'
 import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT } from '../lib/labels.js'
+import DateTimeField from './ui/DateTimeField.jsx'
+import Select from './ui/Select.jsx'
+import Stepper from './ui/Stepper.jsx'
+import useConfirm from './ui/useConfirm.jsx'
 
 const TABS = [
   { id: 'applications', label: '신청 관리' },
@@ -123,8 +127,8 @@ function Applications({ data, idx, act, busy }) {
       </div>
 
       <div className="admin-filters">
-        <Select value={kind} onChange={setKind} options={[['all', '전체 유형'], ['solo', '개인'], ['team', '팀']]} />
-        <Select value={status} onChange={setStatus} options={[['all', '전체 상태'], ['submitted', '제출'], ['approved', '승인'], ['rejected', '거절'], ['draft', '작성 중']]} />
+        <Select size="small" value={kind} onChange={setKind} ariaLabel="유형" options={[['all', '전체 유형'], ['solo', '개인'], ['team', '팀']]} />
+        <Select size="small" value={status} onChange={setStatus} ariaLabel="상태" options={[['all', '전체 상태'], ['submitted', '제출'], ['approved', '승인'], ['rejected', '거절'], ['draft', '작성 중']]} />
         <span className="note">{selected.size}건 선택</span>
         <button className="btn small primary" disabled={busy || !selected.size} onClick={() => decideSelected('approved')}>승인</button>
         <button className="btn small ghost" disabled={busy || !selected.size} onClick={() => decideSelected('rejected')}>거절</button>
@@ -179,11 +183,12 @@ function Assign({ data, idx, act, busy }) {
   const [name, setName] = useState('')
   const [leader, setLeader] = useState('')
   const [addTo, setAddTo] = useState({})
+  const [dialog, confirm] = useConfirm()
 
   const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
   const sizeOk = picked.length >= min && picked.length <= max
   const create = async () => {
-    if (!sizeOk && !confirm(`팀 인원 조건(${min}~${max}명)을 벗어납니다. 그래도 만들까요?`)) return
+    if (!sizeOk && !(await confirm(`팀 인원 조건(${min}~${max}명)을 벗어납니다. 그래도 만들까요?`, { ok: '만들기' }))) return
     if (await act('create_team', { name, userIds: picked, leaderId: leader || null })) {
       setPicked([])
       setName('')
@@ -193,6 +198,7 @@ function Assign({ data, idx, act, busy }) {
 
   return (
     <section className="admin-section admin-assign">
+      {dialog}
       <div className="glass">
         <div className="track-head"><h3>배정 대기</h3><span className="track-size">{pool.length}명</span></div>
         {pool.length === 0 && <p className="note">승인된 개인 참가자 중 팀이 없는 사람이 없습니다.</p>}
@@ -216,10 +222,7 @@ function Assign({ data, idx, act, busy }) {
           <label className="field"><span className="field-label">팀명 (비워 두면 팀이 정함)</span><input type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} /></label>
           <label className="field">
             <span className="field-label">팀장</span>
-            <select value={leader} onChange={(e) => setLeader(e.target.value)}>
-              <option value="">나중에 지정</option>
-              {picked.map((id) => <option key={id} value={id}>{idx.user.get(id)?.name}</option>)}
-            </select>
+            <Select value={leader} onChange={setLeader} ariaLabel="팀장" options={[['', '나중에 지정'], ...picked.map((id) => [id, idx.user.get(id)?.name])]} />
           </label>
           <button className="btn primary" disabled={busy || !picked.length} onClick={create}>팀 만들기</button>
         </div>
@@ -245,10 +248,13 @@ function Assign({ data, idx, act, busy }) {
               </ul>
               {pool.length > 0 && (
                 <div className="inline-form">
-                  <select value={addTo[t.id] ?? ''} onChange={(e) => setAddTo((s) => ({ ...s, [t.id]: e.target.value }))}>
-                    <option value="">배정 대기에서 추가…</option>
-                    {pool.map((a) => <option key={a.user_id} value={a.user_id}>{idx.user.get(a.user_id)?.name} ({school(idx.user.get(a.user_id))})</option>)}
-                  </select>
+                  <Select
+                    size="small"
+                    value={addTo[t.id] ?? ''}
+                    onChange={(v) => setAddTo((s) => ({ ...s, [t.id]: v }))}
+                    ariaLabel="추가할 참가자"
+                    options={[['', '배정 대기에서 추가…'], ...pool.map((a) => [a.user_id, `${idx.user.get(a.user_id)?.name} (${school(idx.user.get(a.user_id))})`])]}
+                  />
                   <button className="btn small ghost" disabled={busy || !addTo[t.id]} onClick={() => act('add_member', { teamId: t.id, userId: addTo[t.id] })}>추가</button>
                 </div>
               )}
@@ -293,10 +299,14 @@ function Teams({ data, idx, act, busy }) {
                 <span className="order mono">{String(i + 1).padStart(2, '0')}</span>
                 <span className="admin-row-title static">{t.name || '팀명 미정'} <span className="note">{t.origin === 'applied' ? '팀 신청' : '운영진 배정'}{status && ` · ${APPLICATION_STATUS_LABEL[status]}`}</span></span>
                 <span className="admin-row-sub">{ms.map((m) => idx.user.get(m.user_id)?.name).join(', ')}</span>
-                <select value={t.leader_id ?? ''} disabled={busy} onChange={(e) => e.target.value && act('set_leader', { teamId: id, userId: e.target.value })} aria-label="팀장">
-                  <option value="">팀장 미정</option>
-                  {ms.map((m) => <option key={m.user_id} value={m.user_id}>{idx.user.get(m.user_id)?.name}</option>)}
-                </select>
+                <Select
+                  size="small"
+                  value={t.leader_id ?? ''}
+                  disabled={busy}
+                  onChange={(v) => v && act('set_leader', { teamId: id, userId: v })}
+                  ariaLabel="팀장"
+                  options={[['', '팀장 미정'], ...ms.map((m) => [m.user_id, idx.user.get(m.user_id)?.name])]}
+                />
                 <span className="order-buttons">
                   <button className="btn small ghost" disabled={i === 0} onClick={() => move(i, -1)} aria-label="위로">↑</button>
                   <button className="btn small ghost" disabled={i === ids.length - 1} onClick={() => move(i, 1)} aria-label="아래로">↓</button>
@@ -316,7 +326,7 @@ const SCHEDULE_FIELDS = [
   ['event_start_at', '행사 시작'], ['event_end_at', '행사 종료'], ['submit_deadline_at', '결과물 제출 마감'],
   ['judging_start_at', '심사 시작'], ['judging_end_at', '심사 종료'],
 ]
-// ISO ↔ <input type="datetime-local"> (브라우저 현지 시각)
+// ISO ↔ 날짜·시간 선택값 'YYYY-MM-DDTHH:mm' (브라우저 현지 시각)
 const toLocal = (iso) => {
   if (!iso) return ''
   const d = new Date(iso)
@@ -345,11 +355,11 @@ function Schedule({ data, act, busy }) {
           {SCHEDULE_FIELDS.map(([k, label]) => (
             <label key={k} className="field">
               <span className="field-label">{label}</span>
-              <input type="datetime-local" value={v[k]} onChange={(e) => setV((s) => ({ ...s, [k]: e.target.value }))} />
+              <DateTimeField value={v[k]} onChange={(val) => setV((s) => ({ ...s, [k]: val }))} ariaLabel={label} />
             </label>
           ))}
-          <label className="field"><span className="field-label">팀 최소 인원</span><input type="number" min={1} max={10} value={v.team_min_size} onChange={(e) => setV((s) => ({ ...s, team_min_size: e.target.value }))} /></label>
-          <label className="field"><span className="field-label">팀 최대 인원</span><input type="number" min={1} max={10} value={v.team_max_size} onChange={(e) => setV((s) => ({ ...s, team_max_size: e.target.value }))} /></label>
+          <div className="field"><span className="field-label">팀 최소 인원</span><Stepper value={v.team_min_size} min={1} max={Number(v.team_max_size)} onChange={(n) => setV((s) => ({ ...s, team_min_size: n }))} ariaLabel="팀 최소 인원" /></div>
+          <div className="field"><span className="field-label">팀 최대 인원</span><Stepper value={v.team_max_size} min={Number(v.team_min_size)} max={10} onChange={(n) => setV((s) => ({ ...s, team_max_size: n }))} ariaLabel="팀 최대 인원" /></div>
         </div>
         <div className="actions"><button className="btn primary" type="submit" disabled={busy}>저장</button></div>
       </form>
@@ -371,7 +381,7 @@ function Accounts({ data, act, busy, adminId }) {
         <div className="track-head"><h3>초청 계정</h3><span className="track-size">학교 계정이 아닌 심사위원·운영진</span></div>
         <form className="invite-form" onSubmit={async (e) => { e.preventDefault(); if (await act('add_invite', { email, role, note })) { setEmail(''); setNote('') } }}>
           <input type="email" placeholder="Google 계정 이메일" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <select value={role} onChange={(e) => setRole(e.target.value)}><option value="judge">심사위원</option><option value="admin">운영진</option></select>
+          <Select value={role} onChange={setRole} ariaLabel="초청 역할" options={[['judge', '심사위원'], ['admin', '운영진']]} />
           <input type="text" placeholder="메모 (예: ○○회사)" value={note} onChange={(e) => setNote(e.target.value)} maxLength={100} />
           <button className="btn small primary" type="submit" disabled={busy}>초청</button>
         </form>
@@ -389,15 +399,20 @@ function Accounts({ data, act, busy, adminId }) {
       <div className="glass">
         <div className="track-head">
           <h3>가입한 계정</h3>
-          <input className="search" type="search" placeholder="이름·이메일 검색" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="search" type="text" placeholder="이름·이메일 검색" value={q} onChange={(e) => setQ(e.target.value)} aria-label="계정 검색" />
         </div>
         <ul className="member-list">
           {users.map((u) => (
             <li key={u.id}>
               <span>{u.name || '(프로필 미입력)'} <span className="note">{school(u)} · {u.email}</span></span>
-              <select value={u.role} disabled={busy || u.id === adminId} onChange={(e) => act('set_role', { userId: u.id, role: e.target.value })} aria-label="역할">
-                {Object.entries(ROLE_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-              </select>
+              <Select
+                size="small"
+                value={u.role}
+                disabled={busy || u.id === adminId}
+                onChange={(v) => act('set_role', { userId: u.id, role: v })}
+                ariaLabel="역할"
+                options={Object.entries(ROLE_LABEL)}
+              />
             </li>
           ))}
         </ul>
@@ -406,10 +421,3 @@ function Accounts({ data, act, busy, adminId }) {
   )
 }
 
-function Select({ value, onChange, options }) {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)}>
-      {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-    </select>
-  )
-}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT } from '../lib/labels.js'
+import useConfirm from './ui/useConfirm.jsx'
 
 const fmt = (iso) => {
   if (!iso) return null
@@ -110,6 +111,7 @@ function ChooseType({ act, busy, locked }) {
 
 // ── 개인 신청서 ──
 function SoloForm({ app, act, busy, locked, onBack }) {
+  const [dialog, confirm] = useConfirm()
   const [v, setV] = useState({ desiredRole: app.desiredRole, techStack: app.techStack.join(', '), motivation: app.motivation })
   const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }))
   const submitted = app.status !== 'draft'
@@ -117,6 +119,7 @@ function SoloForm({ app, act, busy, locked, onBack }) {
 
   return (
     <form className="form glass page-card" onSubmit={(e) => { e.preventDefault(); save(true) }}>
+      {dialog}
       <div className="track-head">
         <h3>개인 참가 신청서</h3>
         <span className="track-size">{APPLICATION_STATUS_LABEL[app.status]}</span>
@@ -127,7 +130,7 @@ function SoloForm({ app, act, busy, locked, onBack }) {
         {!submitted && <button className="btn ghost" type="button" disabled={locked || busy} onClick={() => save(false)}>임시 저장</button>}
         {onBack && <button className="btn ghost" type="button" onClick={onBack}>다른 방식 고르기</button>}
         {!onBack && !locked && (
-          <button className="btn ghost" type="button" disabled={busy} onClick={() => confirm('개인 신청을 취소할까요? 작성한 내용이 지워집니다.') && act('cancel_solo')}>
+          <button className="btn ghost" type="button" disabled={busy} onClick={async () => (await confirm('개인 신청을 취소할까요? 작성한 내용이 지워집니다.', { ok: '신청 취소', danger: true })) && act('cancel_solo')}>
             신청 취소
           </button>
         )}
@@ -147,6 +150,7 @@ function TeamView({ team, app, teamSize, myId, act, busy, locked }) {
   const [v, setV] = useState({ role: app.desiredRole, techStack: app.techStack.join(', '), motivation: app.motivation })
   const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }))
   const [copied, setCopied] = useState(false)
+  const [dialog, confirm] = useConfirm()
 
   const copy = async () => {
     try {
@@ -158,6 +162,7 @@ function TeamView({ team, app, teamSize, myId, act, busy, locked }) {
 
   return (
     <div className="apply-team">
+      {dialog}
       <section className="glass page-card">
         <div className="track-head">
           <h3>{team.name || '팀명 미정'}</h3>
@@ -213,7 +218,7 @@ function TeamView({ team, app, teamSize, myId, act, busy, locked }) {
             <button
               className="btn ghost"
               disabled={busy}
-              onClick={() => confirm(isLeader ? '팀을 해체할까요?' : '팀에서 나갈까요?') && act('leave_team')}
+              onClick={async () => (await confirm(isLeader ? '팀을 해체할까요?' : '팀에서 나갈까요?', { ok: isLeader ? '팀 해체' : '나가기', danger: true })) && act('leave_team')}
             >
               {isLeader ? '팀 해체' : '팀 나가기'}
             </button>
