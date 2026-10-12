@@ -28,8 +28,10 @@ create table allowed_domains (
   domain text primary key,          -- 예: 'hanyang.ac.kr'
   school school not null
 );
-insert into allowed_domains (domain, school) values ('hanyang.ac.kr', 'hanyang');
--- 성균관대·서강대 도메인은 확정되면 추가한다
+insert into allowed_domains (domain, school) values
+  ('hanyang.ac.kr', 'hanyang'),
+  ('g.skku.edu', 'skku'),
+  ('u.sogang.ac.kr', 'sogang');
 
 -- 학교 계정이 아닌 사람(외부 심사위원, 학교 계정이 없는 운영진)의 로그인 허용 목록
 create table invited_emails (
@@ -68,7 +70,7 @@ create table event_config (
   judging_start_at      timestamptz,
   judging_end_at        timestamptz,
   results_published_at  timestamptz,             -- null이면 결과 비공개
-  team_min_size         int not null default 2,
+  team_min_size         int not null default 2,   -- 팀 신청·운영진 배정 팀 모두 적용
   team_max_size         int not null default 4,
   updated_at            timestamptz not null default now()
 );
@@ -123,16 +125,16 @@ create index applications_team_idx on applications (team_id);
 create trigger applications_updated_at before update on applications for each row execute function set_updated_at();
 
 -- ───────────────────────── 결과물 제출 (팀마다 하나) ─────────────────────────
--- 파일은 Supabase Storage 'submissions' 버킷에 두고 경로만 저장한다
+-- 파일(발표자료 PDF, 대표 이미지)은 Supabase Storage 'submissions' 버킷에 두고 경로만 저장한다.
+-- 프로토타입은 파일 업로드 없이 링크(배포 주소·Figma 등)로만 받는다
 create table submissions (
   team_id             uuid primary key references teams (id) on delete cascade,
   project_name        text not null,
   tagline             text,                       -- 한 줄 소개
   description         text,
-  cover_image_path    text,                       -- 대표 이미지
-  prototype_url       text,                       -- 프로토타입 (링크 또는 파일 중 하나 필수)
-  prototype_file_path text,
-  slides_path         text,                       -- 발표자료 PDF (필수)
+  cover_image_path    text,                       -- 대표 이미지 (5MB, png/jpg/webp)
+  prototype_url       text,                       -- 프로토타입 링크 (필수)
+  slides_path         text,                       -- 발표자료 PDF (필수, 20MB)
   github_url          text,                       -- 필수
   demo_video_url      text,
   deploy_url          text,
@@ -144,11 +146,14 @@ create table submissions (
 create trigger submissions_updated_at before update on submissions for each row execute function set_updated_at();
 
 -- ───────────────────────── 심사 (기획 확정 전 · 바뀔 수 있음) ─────────────────────────
--- 외부 심사위원(users.role = 'judge')이 평가 항목별 점수를 매기는 형태를 가정한다
+-- 외부 심사위원(users.role = 'judge')이 평가 항목별 점수를 매기는 형태를 가정한다.
+-- 점수 방식이 미정이라 항목마다 최저·최고점을 둔다: 1~5점(1,5), 1~10점(1,10), 배점제(0,30) 모두 표현 가능
 create table criteria (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   description text,
+  min_score   numeric not null default 1,
+  max_score   numeric not null default 5 check (max_score > min_score),
   weight      numeric not null default 1 check (weight >= 0),
   sort_order  int not null default 0,
   created_at  timestamptz not null default now()
@@ -158,7 +163,7 @@ create table scores (
   judge_id     uuid not null references users (id) on delete cascade,
   team_id      uuid not null references teams (id) on delete cascade,
   criterion_id uuid not null references criteria (id) on delete cascade,
-  score        numeric not null,
+  score        numeric not null,                   -- 범위(criteria.min_score~max_score)는 서버에서 확인
   voided_at    timestamptz,                         -- 운영진이 특정 평가를 무효 처리한 시각
   updated_at   timestamptz not null default now(),
   primary key (judge_id, team_id, criterion_id)
@@ -202,7 +207,8 @@ alter table awards          enable row level security;
 alter table email_logs      enable row level security;
 
 -- ───────────────────────── 파일 저장소 ─────────────────────────
--- 비공개 버킷: 파일은 서버가 짧은 유효기간의 서명 URL을 만들어 내려준다
-insert into storage.buckets (id, name, public)
-values ('submissions', 'submissions', false)
+-- 비공개 버킷: 파일은 서버가 짧은 유효기간의 서명 URL을 만들어 내려준다.
+-- 버킷 한도는 큰 쪽(PDF 20MB)에 맞추고, 종류별 한도(이미지 5MB)는 서버에서 확인한다
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('submissions', 'submissions', false, 20971520, array['application/pdf', 'image/png', 'image/jpeg', 'image/webp'])
 on conflict (id) do nothing;

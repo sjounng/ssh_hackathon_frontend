@@ -12,11 +12,11 @@ export const EVENT = {
   capacity: '[N]명 · [N]시간',
 }
 
-// 주최 학교. domain이 null이면 "확정 예정"으로 표시된다 (기획서 개요 > 로그인 허용 Google 계정)
+// 주최 학교. 로그인 허용 도메인의 실제 기준은 DB의 allowed_domains 테이블이다 (여기 domain은 표시용)
 export const HOSTS = [
   { key: 'hy', name: '한양대학교', short: '한양대', domain: '@hanyang.ac.kr' },
-  { key: 'sk', name: '성균관대학교', short: '성균관대', domain: null },
-  { key: 'sg', name: '서강대학교', short: '서강대', domain: null },
+  { key: 'sk', name: '성균관대학교', short: '성균관대', domain: '@g.skku.edu' },
+  { key: 'sg', name: '서강대학교', short: '서강대', domain: '@u.sogang.ac.kr' },
 ]
 
 // 신청 기간: 이 기간 안에만 신청 버튼이 활성화된다 [임시 날짜]
