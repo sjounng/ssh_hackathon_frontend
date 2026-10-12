@@ -2,7 +2,7 @@ import 'server-only'
 import { db } from './supabase.js'
 import { validateProfile } from './profile.js'
 
-export const SCHOOL_LABEL = { hanyang: '한양대학교', skku: '성균관대학교', sogang: '서강대학교' }
+export { SCHOOL_LABEL } from './labels.js'
 
 // 로그인 허용 여부: 학교 도메인이면 소속 학교, 초청 목록에 있으면 초청 역할. 둘 다 아니면 null(차단)
 export async function resolveAccess(email) {

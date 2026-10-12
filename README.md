@@ -42,12 +42,21 @@ npm run start   # 빌드 결과 실행
 
 ### 처음 설정
 
-1. Supabase 프로젝트를 만들고 SQL Editor에서 `supabase/migrations/0001_init.sql`을 실행
+1. Supabase 프로젝트를 만들고 SQL Editor에서 `supabase/migrations/`의 SQL 파일을 번호 순서대로 실행
 2. Google Cloud Console에서 OAuth 클라이언트(웹 애플리케이션)를 만들고, 승인된 리디렉션 URI에 추가
    - `http://localhost:3000/api/auth/callback/google`, `http://localhost:5173/api/auth/callback/google` (로컬)
    - `https://ssh-hackathon-frontend.vercel.app/api/auth/callback/google` (운영)
 3. `.env.example`을 `.env.local`로 복사해 값을 채운다. 운영은 Vercel 환경변수에 같은 이름으로 넣는다
 4. 운영진 계정 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';`
+
+### DB 규칙 테스트
+
+참가 신청 규칙은 DB 함수(`supabase/migrations/0002_apply.sql`)에 있고, 로컬 Postgres로 시험할 수 있다.
+
+```bash
+# 빈 DB에 마이그레이션을 적용한 뒤
+psql -f supabase/tests/apply_test.sql   # 끝까지 가면 'ALL APPLY TESTS PASSED'
+```
 
 ## 배포
 

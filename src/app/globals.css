@@ -226,6 +226,29 @@ mark.ph { background: none; color: inherit; }
 .btn[disabled] { opacity: 0.55; cursor: progress; }
 .login-form { margin-top: 32px; }
 
+/* ---------- 참가 신청 ---------- */
+.page-inner.wide { max-width: 880px; }
+.notice { margin-top: 20px; font-size: 15px; }
+.muted { color: var(--ink-soft); font-size: 15px; line-height: 1.6; }
+.actions.push { margin-top: auto; padding-top: 20px; }
+.apply-choose { margin-top: 32px; }
+.apply-choose .track { display: flex; flex-direction: column; gap: 4px; }
+.inline-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; margin-top: 16px; }
+.apply-team { display: grid; gap: 0; }
+.join-code { margin: 18px 0 6px; display: grid; gap: 8px; }
+.join-code-row { display: flex; align-items: center; gap: 12px; }
+.join-code code { font-size: 26px; letter-spacing: 0.18em; }
+.member-rows { margin-top: 18px; }
+.member-rows > div { grid-template-columns: 1fr 1.4fr; }
+.pending { color: var(--ink-faint); }
+.size-check { margin-top: 14px; font-size: 14px; color: #ff9a8f; }
+.size-check.ok { color: var(--ink-soft); }
+.field textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+.field input:disabled, .field textarea:disabled { opacity: 0.55; }
+@media (max-width: 560px) {
+  .inline-form { grid-template-columns: 1fr; }
+}
+
 /* ---------- 기능 페이지 (준비 중) ---------- */
 .page { position: relative; z-index: 1; min-height: 100svh; padding: 140px var(--gutter) 96px; }
 .page-inner { max-width: 720px; }
