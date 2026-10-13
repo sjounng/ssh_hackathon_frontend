@@ -55,7 +55,7 @@ erDiagram
 
 **최초 로그인**
 1. Google 로그인 → 도메인/초청 목록 확인 → 없으면 차단
-2. `users` 행 생성 (`school`은 도메인으로, 초청자는 `invited_emails.role`로 `role` 설정)
+2. `users` 행 생성. 초청 목록에 있으면 학교 메일이어도 초청자로 보고 `invited_emails.role`로 `role`을 정한다(`school`은 비움). 아니면 `school`을 도메인으로 채운다
 3. `profile_completed_at`이 비어 있으면 프로필 입력 화면으로 보낸다
 
 **개인 신청**: `applications(kind='solo')` 작성 → 마감 전까지 수정 → 제출(`submitted`)

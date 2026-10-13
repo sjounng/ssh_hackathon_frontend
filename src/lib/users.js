@@ -4,16 +4,17 @@ import { validateProfile } from './profile.js'
 
 export { SCHOOL_LABEL } from './labels.js'
 
-// 로그인 허용 여부: 학교 도메인이면 소속 학교, 초청 목록에 있으면 초청 역할. 둘 다 아니면 null(차단)
+// 로그인 허용 여부: 초청 목록에 있으면 초청 역할, 학교 도메인이면 소속 학교. 둘 다 아니면 null(차단).
+// 초청 목록을 먼저 본다: 학교 메일을 쓰는 심사위원(교수 등)도 참가자가 아니라 초청한 역할로 들어온다
 export async function resolveAccess(email) {
-  const domain = email.split('@')[1]
-  const { data: d, error: e1 } = await db().from('allowed_domains').select('school').eq('domain', domain).maybeSingle()
+  const { data: inv, error: e1 } = await db().from('invited_emails').select('role').eq('email', email).maybeSingle()
   if (e1) throw e1
-  if (d) return { school: d.school, role: null }
-
-  const { data: inv, error: e2 } = await db().from('invited_emails').select('role').eq('email', email).maybeSingle()
-  if (e2) throw e2
   if (inv) return { school: null, role: inv.role }
+
+  const domain = email.split('@')[1]
+  const { data: d, error: e2 } = await db().from('allowed_domains').select('school').eq('domain', domain).maybeSingle()
+  if (e2) throw e2
+  if (d) return { school: d.school, role: null }
   return null
 }
 
