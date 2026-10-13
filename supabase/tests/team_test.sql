@@ -1,4 +1,4 @@
--- 내 팀 · 결과물 제출 함수 시나리오 테스트 (0001~0004 적용 후, 새 DB에서 실행). 끝까지 가면 'ALL TEAM TESTS PASSED'
+-- 내 팀 · 결과물 제출 함수 시나리오 테스트 (0001~0007 적용 후, 새 DB에서 실행). 끝까지 가면 'ALL TEAM TESTS PASSED'
 -- 로컬 Postgres에는 Supabase Storage가 없으므로 storage.objects를 흉내 낸 표에 파일 행을 직접 넣는다
 \set ON_ERROR_STOP on
 
@@ -35,6 +35,10 @@ begin
   perform expect_error(format('select team_set_role(%L, %L)', S1, 'FE'), 'NOT_APPROVED');
 
   perform admin_decide(ADM, array(select id from applications where user_id in (S1, S2)), 'approved');
+  -- 선발 발표 전에는 승인됐어도 선발되지 않은 것과 똑같이 보인다
+  update event_config set selection_announce_at = now() + interval '1 day';
+  perform expect_error(format('select team_set_role(%L, %L)', S1, 'FE'), 'NOT_APPROVED');
+  update event_config set selection_announce_at = now() - interval '1 minute';
   perform expect_error(format('select team_set_role(%L, %L)', S1, 'FE'), 'NOT_IN_TEAM');
 
   -- 팀장 없이 배정

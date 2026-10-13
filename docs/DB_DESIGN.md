@@ -66,6 +66,7 @@ erDiagram
 3. 인원 조건(`event_config.team_min_size ~ team_max_size`) 충족 시 대표가 제출 → 팀원 전원의 `applications.status = 'submitted'`, `teams.application_submitted_at`
 
 **선발**: 운영진이 승인/거절 → `applications.status`, `decided_at` (팀 신청은 팀원 전원 함께) → 결과 메일 일괄 발송(`email_logs`)
+- 선발 발표 시각(`selection_announce_at`) 전에는 미리 정해 둔 결과가 참가자에게 '제출'로 보이고, 내 팀 기능도 막힌다 (`0007_selection_announce.sql`). 비어 있으면 정하는 즉시 공개
 
 **팀 배정**: 운영진이 승인된 개인 참가자로 `teams(origin='assigned')`를 만들고 `team_members` 추가 → 배정 메일 발송. 배정된 팀은 팀에서 팀명 입력
 

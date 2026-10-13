@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT } from '../lib/labels.js'
+import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT, formatDateTime } from '../lib/labels.js'
 import DateTimeField from './ui/DateTimeField.jsx'
 import Select from './ui/Select.jsx'
 import Stepper from './ui/Stepper.jsx'
@@ -122,6 +122,7 @@ function Applications({ data, idx, act, busy }) {
       <div className="admin-toolbar">
         <p className="note">
           제출 {count('submitted')} · 승인 {count('approved')} · 거절 {count('rejected')} · 작성 중 {count('draft')} (팀은 한 건으로 셉니다)
+          {data.config.selection_announce_at && <><br />승인·거절은 선발 발표({formatDateTime(data.config.selection_announce_at)}) 전까지 참가자에게 &apos;결과 대기&apos;로 보입니다.</>}
         </p>
         <div className="actions">
           <a className="btn small ghost" href="/api/admin/export">명단 내보내기 (CSV)</a>

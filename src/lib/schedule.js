@@ -15,6 +15,13 @@ export function getApplyStatus(now, { openAt, closeAt }) {
   return { state: 'open', dday: close ? Math.max(0, Math.ceil((close - now) / DAY)) : null }
 }
 
+// 선발 발표 시각 전에는 운영진이 미리 정해 둔 승인·거절을 '제출'로 보여준다 (DB 함수 team_of와 같은 규칙, 0007).
+// 발표 시각이 비어 있으면 정하는 즉시 공개된다
+export function announcedStatus(status, announceAt, now = Date.now()) {
+  const decided = status === 'approved' || status === 'rejected'
+  return decided && announceAt && now < Date.parse(announceAt) ? 'submitted' : status
+}
+
 // 날짜는 행사 기준인 한국 시각으로 보여준다 (서버에서 그려도 방문자 브라우저와 같은 값이 나오게)
 function kst(value) {
   const d = new Date(new Date(value).getTime() + 9 * 60 * 60 * 1000)

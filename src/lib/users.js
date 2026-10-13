@@ -1,6 +1,7 @@
 import 'server-only'
 import { db } from './supabase.js'
 import { validateProfile } from './profile.js'
+import { announcedStatus } from './schedule.js'
 
 export { SCHOOL_LABEL } from './labels.js'
 
@@ -50,16 +51,23 @@ export async function getUserById(id) {
   return data
 }
 
-// 내 정보 화면용: 프로필 + 신청 상태 + 소속 팀
+// 내 정보 화면용: 프로필 + 신청 상태 + 소속 팀.
+// 선발 결과는 선발 발표 시각부터, 운영진이 배정한 팀은 팀 배정 발표 시각부터 보인다 (내 팀 페이지와 같은 규칙)
 export async function getMyOverview(userId) {
-  const [user, app, member] = await Promise.all([
+  const [user, app, member, cfg] = await Promise.all([
     getUserById(userId),
-    db().from('applications').select('kind, status, submitted_at, decided_at').eq('user_id', userId).maybeSingle(),
+    db().from('applications').select('kind, status, submitted_at').eq('user_id', userId).maybeSingle(),
     db().from('team_members').select('role, teams(id, name, origin, leader_id)').eq('user_id', userId).maybeSingle(),
+    db().from('event_config').select('selection_announce_at, team_assign_at').single(),
   ])
-  if (app.error) throw app.error
-  if (member.error) throw member.error
-  return { user, application: app.data, team: member.data?.teams ?? null }
+  for (const r of [app, member, cfg]) if (r.error) throw r.error
+  const c = cfg.data
+  const application = app.data && { ...app.data, status: announcedStatus(app.data.status, c.selection_announce_at) }
+  let team = member.data?.teams ?? null
+  if (team?.origin === 'assigned' && (application?.status !== 'approved' || (c.team_assign_at && Date.now() < Date.parse(c.team_assign_at)))) {
+    team = null
+  }
+  return { user, application, team }
 }
 
 export async function updateProfile(user, input) {

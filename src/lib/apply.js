@@ -1,5 +1,6 @@
 import 'server-only'
 import { db } from './supabase.js'
+import { announcedStatus } from './schedule.js'
 
 // 참가 신청 (기획서 기능 3). 규칙은 DB 함수(supabase/migrations/0002_apply.sql)에 있고, 여기서는 호출·조회만 한다
 
@@ -72,7 +73,7 @@ export function normalizeApplyBody(body) {
 // 신청 화면에 필요한 상태: 신청 기간, 내 신청, 팀과 팀원
 export async function getApplyState(userId) {
   const [cfg, app, member] = await Promise.all([
-    db().from('event_config').select('apply_open_at, apply_close_at, team_min_size, team_max_size').single(),
+    db().from('event_config').select('apply_open_at, apply_close_at, selection_announce_at, team_min_size, team_max_size').single(),
     db().from('applications').select('*').eq('user_id', userId).maybeSingle(),
     db().from('team_members').select('team_id').eq('user_id', userId).maybeSingle(),
   ])
@@ -83,8 +84,9 @@ export async function getApplyState(userId) {
   const isOpen =
     (!c.apply_open_at || now >= Date.parse(c.apply_open_at)) && (!c.apply_close_at || now <= Date.parse(c.apply_close_at))
 
+  // 팀 정보는 팀으로 신청한 사람에게만 준다 (개인 신청자가 배정된 팀은 내 팀 페이지에서 발표 시각부터 보인다)
   let team = null
-  if (member.data) {
+  if (member.data && app.data?.kind === 'team') {
     const { data: t, error: e1 } = await db()
       .from('teams')
       .select('id, name, origin, join_code, leader_id, application_submitted_at')
@@ -114,7 +116,7 @@ export async function getApplyState(userId) {
     teamSize: { min: c.team_min_size, max: c.team_max_size },
     application: a && {
       kind: a.kind,
-      status: a.status,
+      status: announcedStatus(a.status, c.selection_announce_at),
       desiredRole: a.desired_role ?? '',
       techStack: a.tech_stack ?? [],
       motivation: a.motivation ?? '',

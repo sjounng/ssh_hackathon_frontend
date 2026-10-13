@@ -1,6 +1,7 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { db } from './supabase.js'
+import { announcedStatus } from './schedule.js'
 
 // 내 팀 · 결과물 제출 (기획서 기능 4 · 5). 규칙은 DB 함수(supabase/migrations/0004_team.sql)에 있다.
 // 파일은 서버를 거치지 않는다: 서버가 서명된 업로드 주소를 주면 브라우저가 Storage에 직접 올리고
@@ -106,7 +107,7 @@ async function signed(path, download) {
 // stage: none(신청 안 함) / pending(선발 대기) / rejected / waiting(승인됐지만 팀 배정 전) / team
 export async function getTeamState(userId) {
   const [cfg, app, member] = await Promise.all([
-    db().from('event_config').select('team_assign_at, event_start_at, submit_deadline_at, team_min_size, team_max_size').single(),
+    db().from('event_config').select('selection_announce_at, team_assign_at, event_start_at, submit_deadline_at, team_min_size, team_max_size').single(),
     db().from('applications').select('kind, status').eq('user_id', userId).maybeSingle(),
     db().from('team_members').select('team_id').eq('user_id', userId).maybeSingle(),
   ])
@@ -115,8 +116,10 @@ export async function getTeamState(userId) {
   const schedule = { teamAssignAt: c.team_assign_at, eventStartAt: c.event_start_at, submitDeadlineAt: c.submit_deadline_at }
 
   if (!app.data) return { stage: 'none', schedule }
-  if (app.data.status === 'rejected') return { stage: 'rejected', schedule }
-  if (app.data.status !== 'approved') return { stage: 'pending', schedule }
+  // 선발 발표 전에는 미리 정해 둔 결과를 보여주지 않는다 (DB 함수 team_of와 같은 규칙)
+  const status = announcedStatus(app.data.status, c.selection_announce_at)
+  if (status === 'rejected') return { stage: 'rejected', schedule }
+  if (status !== 'approved') return { stage: 'pending', schedule }
   if (!member.data) return { stage: 'waiting', schedule }
 
   const [t, rows, sub] = await Promise.all([

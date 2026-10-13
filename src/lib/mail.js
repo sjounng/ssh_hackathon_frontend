@@ -251,7 +251,13 @@ export async function mailSummary(d) {
   if (error) return { ready: false, from, testing, error: `메일 기록을 읽지 못했습니다. SQL Editor에서 0006_mail.sql을 실행했는지 확인해 주세요. (${error.message})` }
 
   const site = siteUrl(null)
-  const beforeAssign = d.config.team_assign_at && Date.now() < Date.parse(d.config.team_assign_at)
+  const before = (at) => at && Date.now() < Date.parse(at)
+  const notes = {
+    selection_result: before(d.config.selection_announce_at)
+      && `선발 발표(${formatKstDateTime(d.config.selection_announce_at)}) 전입니다. 지금 보내면 사이트에 결과가 공개되기 전에 메일이 먼저 도착합니다.`,
+    team_assignment: before(d.config.team_assign_at)
+      && `팀 배정 발표(${formatKstDateTime(d.config.team_assign_at)}) 전입니다. 지금 보내도 내 팀 페이지에는 그 시각부터 팀이 보입니다.`,
+  }
   const kinds = {}
   for (const kind of Object.keys(MAIL_KINDS)) {
     const last = new Map() // 사람마다 마지막 기록
@@ -272,9 +278,7 @@ export async function mailSummary(d) {
         .filter((t) => last.get(t.userId)?.status === 'failed')
         .map((t) => ({ name: t.name, email: t.email, error: last.get(t.userId).error })),
       placeholders: placeholdersOf(kind),
-      note: kind === 'team_assignment' && beforeAssign
-        ? `팀 배정 발표(${formatKstDateTime(d.config.team_assign_at)}) 전입니다. 지금 보내도 내 팀 페이지에는 그 시각부터 팀이 보입니다.`
-        : null,
+      note: notes[kind] || null,
       previews: samplesOf(kind, d).map((s) => {
         const { subject, text } = renderMail(s.template, s.vars, site)
         return { label: s.label, subject, text }
