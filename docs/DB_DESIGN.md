@@ -114,6 +114,7 @@ erDiagram
 | 팀 인원 | 팀 신청·운영진 배정 팀 모두 2~4명 (`event_config.team_min_size`·`team_max_size`) |
 | 메일 발송 | Resend (`RESEND_API_KEY`, `MAIL_FROM`) |
 | 제출 파일 | 발표자료 PDF 20MB · 대표 이미지 5MB(png/jpg/webp)만 업로드. 프로토타입은 링크로만 |
+| 일정 | `event_config`(관리자 페이지 > 일정) 한 곳에서 관리하고 첫 화면도 이 값을 쓴다. `results_announce_at`은 안내용, 결과 공개는 `results_published_at` (`0005_schedule.sql`) |
 
 ## 남은 결정
 

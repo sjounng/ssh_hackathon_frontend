@@ -75,7 +75,7 @@ export const setPresentationOrder = (admin, teamIds) => rpc('admin_set_presentat
 // ── 일정 ──
 const DATE_FIELDS = [
   'apply_open_at', 'apply_close_at', 'selection_announce_at', 'team_assign_at', 'event_start_at', 'event_end_at',
-  'submit_deadline_at', 'judging_start_at', 'judging_end_at',
+  'submit_deadline_at', 'judging_start_at', 'judging_end_at', 'results_announce_at',
 ]
 
 export async function saveConfig(input) {

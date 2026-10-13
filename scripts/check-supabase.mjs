@@ -47,6 +47,14 @@ for (const [file, label, fn, params, codes] of [
   }
 }
 
+// 0005: 결과 발표 일정 칸
+const { error: colErr } = await db.from('event_config').select('results_announce_at').single()
+if (!colErr) console.log('✓ 결과 발표 일정 칸 (0005_schedule.sql)')
+else {
+  ok = false
+  console.log(`✗ 결과 발표 일정 칸 (0005_schedule.sql): ${colErr.message} — SQL Editor에서 0005_schedule.sql을 실행했는지 확인`)
+}
+
 const { data: buckets, error: bErr } = await db.storage.listBuckets()
 if (bErr) console.log(`✗ 파일 저장소: ${bErr.message}`)
 else console.log(`${buckets.some((b) => b.id === 'submissions') ? '✓' : '✗'} 파일 저장소 버킷 'submissions'`)

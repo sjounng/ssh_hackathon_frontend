@@ -1,13 +1,13 @@
-// 랜딩 페이지의 모든 문구와 일정 설정.
+// 랜딩 페이지의 모든 문구.
 // 문구는 이 파일만 고치면 된다. 대괄호([ ])로 감싼 값은 아직 정해지지 않은 자리표시이며,
 // 화면에도 대괄호째 보이므로 교체할 곳을 쉽게 찾을 수 있다.
-// 날짜 값(ISO 형식)은 신청 버튼 활성화와 "현재 단계" 표시에 쓰이므로 실제 일정이 정해지면 함께 바꾼다.
+// 일정(날짜)과 팀 인원은 여기 두지 않는다: 관리자 페이지 > 일정(DB)에 넣으면 첫 화면의 일시·신청 버튼·
+// 행사 일정·참가 자격에 그대로 보인다. 비어 있는 날짜는 '[미정]'으로 보인다.
 
 export const EVENT = {
   name: '[행사명]',
   eyebrow: '한양대 × 성균관대 × 서강대 연합 해커톤',
   summary: '[행사를 한두 문장으로 소개하는 문구]',
-  date: '[YYYY.MM.DD (요일) – MM.DD (요일)]',
   venue: '[장소]',
   capacity: '[N]명 · [N]시간',
 }
@@ -19,10 +19,8 @@ export const HOSTS = [
   { key: 'sg', name: '서강대학교', short: '서강대', domain: '@u.sogang.ac.kr' },
 ]
 
-// 신청 기간: 이 기간 안에만 신청 버튼이 활성화된다 [임시 날짜]
+// 신청 버튼이 여는 주소. 버튼은 관리자 일정의 신청 시작~마감 사이에만 활성화된다
 export const APPLY = {
-  open: '2026-10-13T00:00:00+09:00',
-  close: '2026-10-27T23:59:59+09:00',
   href: '/apply',
 }
 
@@ -100,7 +98,7 @@ export const ELIGIBILITY = {
     {
       key: 'team',
       title: '팀 참가',
-      badge: '2~4명',
+      badge: ({ min, max }) => `${min}~${max}명`, // 관리자 일정의 팀 인원 조건
       steps: [
         '팀 대표가 팀 신청을 만들고 참가 코드를 받습니다.',
         '팀원들이 참가 코드로 합류해 각자 역할을 작성합니다.',
@@ -145,21 +143,23 @@ export const REVIEW = {
   ],
 }
 
-// 단계별 일정. start는 "현재 단계" 표시에 쓰인다 [임시 날짜]
+// 단계별 일정. 날짜는 관리자 일정(DB event_config)의 칸에서 가져온다.
+// from~to: 표시할 날짜 칸. from이 "진행 중" 표시가 시작되는 시각이다. time: 시각까지 표시
+// 결과물 제출은 행사 중에 하므로 마감만 보여 주고, 그동안은 '행사'가 진행 중으로 보인다
 export const PHASES = [
-  { key: 'apply', label: '모집', date: '[10.13 – 10.27]', start: '2026-10-13T00:00:00+09:00' },
-  { key: 'select', label: '선발 발표', date: '[10.31]', start: '2026-10-31T00:00:00+09:00' },
-  { key: 'assign', label: '팀 배정', date: '[11.03]', start: '2026-11-03T00:00:00+09:00' },
-  { key: 'event', label: '행사', date: '[11.14 – 11.15]', start: '2026-11-14T00:00:00+09:00' },
-  { key: 'submit', label: '결과물 제출', date: '[11.15 12:00]', start: '2026-11-15T09:00:00+09:00' },
-  { key: 'review', label: '심사', date: '[11.15 – 11.17]', start: '2026-11-15T12:00:00+09:00' },
-  { key: 'results', label: '결과 발표', date: '[11.20]', start: '2026-11-20T00:00:00+09:00' },
+  { key: 'apply', label: '모집', from: 'apply_open_at', to: 'apply_close_at' },
+  { key: 'select', label: '선발 발표', from: 'selection_announce_at' },
+  { key: 'assign', label: '팀 배정', from: 'team_assign_at' },
+  { key: 'event', label: '행사', from: 'event_start_at', to: 'event_end_at' },
+  { key: 'submit', label: '결과물 제출', to: 'submit_deadline_at', time: true },
+  { key: 'review', label: '심사', from: 'judging_start_at', to: 'judging_end_at' },
+  { key: 'results', label: '결과 발표', from: 'results_announce_at' },
 ]
 
+// 당일 타임테이블. 날짜는 관리자 일정의 행사 시작일로부터 DAY 1, DAY 2… 순서로 계산한다
 export const TIMETABLE = [
   {
     day: 'DAY 1',
-    date: '[MM.DD (요일)]',
     rows: [
       { time: '[10:00]', title: '[체크인]' },
       { time: '[10:30]', title: '[개회식 · 주제 발표]' },
@@ -170,7 +170,6 @@ export const TIMETABLE = [
   },
   {
     day: 'DAY 2',
-    date: '[MM.DD (요일)]',
     rows: [
       { time: '[08:00]', title: '[아침 식사]' },
       { time: '[12:00]', title: '[결과물 제출 마감]' },

@@ -16,16 +16,17 @@ npm run start   # 빌드 결과 실행
 | 경로 | 내용 |
 |---|---|
 | `src/app/` | Next.js App Router 진입점 (`layout.jsx`: 글꼴·메타데이터, `page.jsx`: 메인 페이지, `globals.css`: 전체 스타일) |
-| `src/content.js` | **페이지의 모든 문구와 일정.** 문구 수정은 이 파일만 고치면 된다 |
+| `src/content.js` | **페이지의 모든 문구.** 문구 수정은 이 파일만 고치면 된다 (일정은 관리자 페이지) |
 | `src/Scene.jsx` | 배경 3D 장면 (빛 배경, 유리 다이아몬드, 스크롤 카메라, 관측 HUD 갱신) |
 | `src/sections/` | 섹션별 컴포넌트 (Hero, About, Prizes, Eligibility, Review, Schedule, Footer) |
 | `src/components/` | 공통 부품 (Header, ApplyButton, Hud, Ph, BackgroundScene) |
-| `src/lib/schedule.js` | 신청 기간·현재 단계 계산 |
+| `src/lib/schedule.js` | 신청 기간·현재 단계 계산, 날짜 표시(한국 시각) |
 
 ## 문구 채우기
 
 - `content.js`에서 대괄호로 감싼 값(`[행사명]` 등)은 아직 정해지지 않은 자리표시다. 화면에는 대괄호째 그대로 보인다.
-- 날짜 값(ISO 형식)은 신청 버튼 활성화와 일정의 "진행 중" 표시에 쓰이므로, 일정이 정해지면 함께 바꾼다.
+- 일정(날짜)과 팀 인원은 `content.js`에 없다. 관리자 페이지 > 일정에 넣으면 첫 화면의 일시·신청 버튼·행사 일정·참가 자격에 그대로 보이고, 비어 있는 날짜는 `[미정]`으로 보인다.
+- 신청 시작·마감을 비워 두면 서버가 그쪽 제한 없이 신청을 받는다. 운영 전에 반드시 채운다.
 
 ## 3D 장면
 
@@ -48,6 +49,7 @@ npm run start   # 빌드 결과 실행
    - `https://ssh-hackathon-frontend.vercel.app/api/auth/callback/google` (운영)
 3. `.env.example`을 `.env.local`로 복사해 값을 채운다. 운영은 Vercel 환경변수에 같은 이름으로 넣는다
 4. 첫 운영진 지정: 로그인 한 번 한 뒤 Supabase에서 `update users set role = 'admin' where email = '...';` (그 뒤로는 관리자 페이지 > 계정에서 지정)
+5. 관리자 페이지 > 일정에서 신청 기간 등 일정을 채운다
 
 ### 연결 점검
 

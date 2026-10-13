@@ -1,6 +1,9 @@
 import { ELIGIBILITY } from '../content.js'
+import Ph from '../components/Ph.jsx'
 
-export default function Eligibility() {
+// schedule: 관리자 일정 (팀 참가 인원 조건을 함께 담고 있다)
+export default function Eligibility({ schedule }) {
+  const teamSize = schedule && { min: schedule.team_min_size, max: schedule.team_max_size }
   return (
     <section className="section" id="eligibility" data-diamond="4">
       <div className="section-head">
@@ -13,7 +16,7 @@ export default function Eligibility() {
           <article className="glass track" key={t.key}>
             <div className="track-head">
               <h3>{t.title}</h3>
-              <span className="track-size">{t.badge}</span>
+              <span className="track-size"><Ph>{typeof t.badge === 'function' ? (teamSize ? t.badge(teamSize) : '[인원]') : t.badge}</Ph></span>
             </div>
             <ol>
               {t.steps.map((s) => <li key={s}>{s}</li>)}

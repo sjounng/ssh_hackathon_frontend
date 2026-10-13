@@ -324,7 +324,7 @@ function Teams({ data, idx, act, busy }) {
 const SCHEDULE_FIELDS = [
   ['apply_open_at', '신청 시작'], ['apply_close_at', '신청 마감'], ['selection_announce_at', '선발 발표'], ['team_assign_at', '팀 배정 발표'],
   ['event_start_at', '행사 시작'], ['event_end_at', '행사 종료'], ['submit_deadline_at', '결과물 제출 마감'],
-  ['judging_start_at', '심사 시작'], ['judging_end_at', '심사 종료'],
+  ['judging_start_at', '심사 시작'], ['judging_end_at', '심사 종료'], ['results_announce_at', '결과 발표'],
 ]
 // ISO ↔ 날짜·시간 선택값 'YYYY-MM-DDTHH:mm' (브라우저 현지 시각)
 const toLocal = (iso) => {
@@ -350,7 +350,7 @@ function Schedule({ data, act, busy }) {
   return (
     <section className="admin-section">
       <form className="form glass admin-schedule" onSubmit={(e) => { e.preventDefault(); save() }}>
-        <p className="note">신청 시작·마감은 참가 신청 가능 여부와 첫 화면 신청 버튼에 바로 쓰입니다. 비워 두면 그쪽 제한이 없습니다.</p>
+        <p className="note">여기 일정과 팀 인원은 첫 화면(일시·신청 버튼·행사 일정·참가 자격)에 그대로 보이고, 비운 칸은 '미정'으로 보입니다. 신청 시작·마감을 비워 두면 그쪽 제한 없이 신청을 받습니다.</p>
         <div className="schedule-grid">
           {SCHEDULE_FIELDS.map(([k, label]) => (
             <label key={k} className="field">
