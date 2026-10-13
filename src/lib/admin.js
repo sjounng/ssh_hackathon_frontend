@@ -2,6 +2,7 @@ import 'server-only'
 import { currentUser } from '../auth.js'
 import { db } from './supabase.js'
 import { getUserById } from './users.js'
+import { mailSummary } from './mail.js'
 
 // 관리자 (기획서 기능 9). 여러 행을 함께 바꾸는 작업은 DB 함수(0003_admin.sql), 단순 조회·수정은 여기서 한다
 
@@ -61,7 +62,8 @@ export async function getAdminData() {
     db().from('users').select('id, email, name, school, role, student_id, phone, created_at').order('created_at').then(must),
     db().from('invited_emails').select('email, role, note, created_at').order('created_at').then(must),
   ])
-  return { config, applications: apps, teams, members, users, invites }
+  const data = { config, applications: apps, teams, members, users, invites }
+  return { ...data, mail: await mailSummary(data) }
 }
 
 // ── 선발·팀 (DB 함수) ──

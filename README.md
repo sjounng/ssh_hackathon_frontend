@@ -59,9 +59,21 @@ npm run smoke:apply   # 실제 DB에서 팀 신청 흐름을 돌리고 테스트
 npm run smoke:team    # 실제 DB에서 내 팀·결과물 제출(파일 업로드 포함) 흐름을 돌리고 테스트 데이터·파일을 지움
 ```
 
+### 안내 메일 (Resend)
+
+관리자 페이지 > 메일에서 선발 결과·팀 배정 메일을 보낸다. 문구는 `content.js`의 `MAIL`에 있다.
+
+1. resend.com에서 API 키를 만들어 `RESEND_API_KEY`에 넣는다
+2. `MAIL_FROM`: 도메인 인증 전에는 `onboarding@resend.dev`만 쓸 수 있고, 이때는 Resend 계정 주인의 메일로만 보내진다. 도메인을 인증하면 `연합 해커톤 <noreply@도메인>`처럼 바꾼다
+3. 관리자 페이지 > 메일 > "나에게 테스트 발송"으로 문구를 확인한 뒤 "남은 N명에게 보내기"
+
+- 한 사람에게 같은 내용을 두 번 보내지 않는다. 선발 결과는 결정이, 팀 배정은 팀이 바뀌면 다시 보낼 대상이 되고, 보내지 못한 사람도 다음에 함께 보낸다 (기록: `email_logs`)
+- 문구에 대괄호 자리표시(`[행사명]` 등)가 남아 있으면 일괄 발송이 막힌다
+- 메일 속 링크는 운영 도메인(`VERCEL_PROJECT_PRODUCTION_URL`, 없으면 관리자가 접속한 주소)을 쓴다
+
 ### DB 규칙 테스트
 
-참가 신청·관리자·내 팀·결과물 규칙은 DB 함수(`supabase/migrations/0002~0004`)에 있고, 로컬 Postgres로 시험할 수 있다.
+참가 신청·관리자·내 팀·결과물·메일 규칙은 DB 함수(`supabase/migrations/0002~0006`)에 있고, 로컬 Postgres로 시험할 수 있다.
 (Supabase처럼 `anon`·`authenticated`·`service_role` 역할과, `storage.buckets`·`storage.objects(bucket_id, name, metadata)` 표를 먼저 만들어 둔다)
 
 ```bash
@@ -69,6 +81,7 @@ npm run smoke:team    # 실제 DB에서 내 팀·결과물 제출(파일 업로�
 psql -f supabase/tests/apply_test.sql   # 끝까지 가면 'ALL APPLY TESTS PASSED'
 psql -f supabase/tests/admin_test.sql   # 'ALL ADMIN TESTS PASSED' (새 DB에서)
 psql -f supabase/tests/team_test.sql    # 'ALL TEAM TESTS PASSED' (새 DB에서)
+psql -f supabase/tests/mail_test.sql    # 'ALL MAIL TESTS PASSED' (새 DB에서)
 psql -f supabase/tests/grants_test.sql  # 'ALL GRANT TESTS PASSED'
 ```
 

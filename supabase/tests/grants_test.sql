@@ -31,6 +31,7 @@ select expect_denied('authenticated', $q$select apply_join_team('00000000-0000-0
 select expect_denied('anon', $q$select admin_assert('00000000-0000-0000-0000-000000000000')$q$);
 select expect_denied('authenticated', $q$select submission_save('00000000-0000-0000-0000-000000000000', '{}', true)$q$);
 select expect_denied('anon', $q$select team_rename('00000000-0000-0000-0000-000000000000', 'x')$q$);
+select expect_denied('authenticated', $q$select mail_finish('00000000-0000-0000-0000-000000000000', '[]')$q$);
 rollback;
 
 select 'ALL GRANT TESTS PASSED';

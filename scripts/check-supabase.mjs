@@ -38,6 +38,7 @@ const NOBODY = '00000000-0000-0000-0000-000000000000'
 for (const [file, label, fn, params, codes] of [
   ['0003_admin.sql', '관리자 함수', 'admin_assert', { p_admin: NOBODY }, ['NOT_ADMIN']],
   ['0004_team.sql', '내 팀·결과물 함수', 'team_set_role', { p_user: NOBODY, p_role: 'x' }, ['NOT_APPROVED']],
+  ['0006_mail.sql', '메일 발송 함수', 'mail_finish', { p_admin: NOBODY, p_results: [] }, ['NOT_ADMIN']],
 ]) {
   const { error } = await db.rpc(fn, params)
   if (codes.includes(error?.message)) console.log(`✓ ${label} (${file})`)
@@ -58,5 +59,10 @@ else {
 const { data: buckets, error: bErr } = await db.storage.listBuckets()
 if (bErr) console.log(`✗ 파일 저장소: ${bErr.message}`)
 else console.log(`${buckets.some((b) => b.id === 'submissions') ? '✓' : '✗'} 파일 저장소 버킷 'submissions'`)
+
+// 메일 발송 설정 (값은 출력하지 않는다)
+const from = process.env.MAIL_FROM?.trim()
+if (!process.env.RESEND_API_KEY || !from) console.log('- 메일 발송 설정 없음 (RESEND_API_KEY, MAIL_FROM) — 관리자 페이지 > 메일이 꺼진 상태로 보인다')
+else console.log(`✓ 메일 발송 설정${/@resend\.dev>?$/.test(from) ? ' (테스트 발신 주소: Resend 계정 주인 메일로만 발송됨)' : ''}`)
 
 console.log(ok ? '\n연결 정상' : '\n일부 확인 실패')

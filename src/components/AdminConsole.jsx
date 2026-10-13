@@ -11,12 +11,14 @@ const TABS = [
   { id: 'applications', label: '신청 관리' },
   { id: 'assign', label: '팀 배정' },
   { id: 'teams', label: '팀 관리' },
+  { id: 'mail', label: '메일' },
   { id: 'schedule', label: '일정' },
   { id: 'accounts', label: '계정' },
 ]
 const ROLE_LABEL = { participant: '참가자', judge: '심사위원', admin: '운영진' }
 
-// 관리자 화면. 모든 변경은 POST /api/admin 후 돌려받은 최신 데이터로 다시 그린다
+// 관리자 화면. 모든 변경은 POST /api/admin 후 돌려받은 최신 데이터로 다시 그린다.
+// act는 성공하면 응답 JSON(메일 작업은 result 포함), 실패하면 false를 돌려준다
 export default function AdminConsole({ initial, adminId }) {
   const [data, setData] = useState(initial)
   const [tab, setTab] = useState('applications')
@@ -34,7 +36,7 @@ export default function AdminConsole({ initial, adminId }) {
         return false
       }
       setData(json)
-      return true
+      return json
     } catch {
       setError('처리하지 못했습니다. 네트워크를 확인해 주세요.')
       return false
@@ -70,6 +72,7 @@ export default function AdminConsole({ initial, adminId }) {
       {tab === 'applications' && <Applications {...props} />}
       {tab === 'assign' && <Assign {...props} />}
       {tab === 'teams' && <Teams {...props} />}
+      {tab === 'mail' && <Mail {...props} />}
       {tab === 'schedule' && <Schedule {...props} />}
       {tab === 'accounts' && <Accounts {...props} />}
     </>
@@ -122,7 +125,6 @@ function Applications({ data, idx, act, busy }) {
         </p>
         <div className="actions">
           <a className="btn small ghost" href="/api/admin/export">명단 내보내기 (CSV)</a>
-          <button className="btn small ghost" disabled title="메일 발송 설정(Resend) 후 사용할 수 있습니다">결과 메일 발송</button>
         </div>
       </div>
 
@@ -316,6 +318,96 @@ function Teams({ data, idx, act, busy }) {
           )
         })}
       </div>
+    </section>
+  )
+}
+
+// ───────────────────────── 메일 ─────────────────────────
+const MAIL_CARDS = [
+  {
+    kind: 'selection_result',
+    title: '선발 결과',
+    desc: '승인·거절이 정해진 신청자 모두에게 결과를 알립니다. 보낸 뒤 결정이 바뀌면 다시 보낼 대상에 들어갑니다.',
+  },
+  {
+    kind: 'team_assignment',
+    title: '팀 배정',
+    desc: '운영진이 배정한 팀의 팀원에게 팀과 팀원 연락처를 알립니다. 팀으로 신청한 팀에는 보내지 않고, 다른 팀으로 옮긴 사람은 다시 보낼 대상에 들어갑니다.',
+  },
+]
+
+function Mail({ data, act, busy }) {
+  const { mail } = data
+  const [dialog, confirm] = useConfirm()
+  const [result, setResult] = useState(null)
+
+  const run = async (card, action) => {
+    const info = mail.kinds[card.kind]
+    if (action === 'send_mail' && !(await confirm(`${info.pending}명에게 ${card.title} 메일을 보낼까요? 보낸 메일은 되돌릴 수 없습니다.`, { ok: '보내기' }))) return
+    setResult(null)
+    const res = await act(action, { kind: card.kind })
+    if (res?.result) setResult({ kind: card.kind, ...res.result })
+  }
+
+  if (mail.error) return <section className="admin-section"><p className="form-error">{mail.error}</p></section>
+  return (
+    <section className="admin-section">
+      {dialog}
+      <p className="note">
+        {!mail.ready
+          ? '메일 발송 설정이 없습니다. Vercel 환경변수(로컬은 .env.local)에 RESEND_API_KEY와 MAIL_FROM을 넣어 주세요.'
+          : `발신 ${mail.from}${mail.testing ? ' — 도메인 인증 전 테스트 주소라 Resend 계정 주인의 메일로만 보낼 수 있습니다.' : ''}`}
+      </p>
+      {MAIL_CARDS.map((card) => {
+        const info = mail.kinds[card.kind]
+        const blocked = info.placeholders.length > 0
+        const r = result?.kind === card.kind ? result : null
+        return (
+          <div key={card.kind} className="glass mail-card">
+            <div className="track-head">
+              <h3>{card.title}</h3>
+              <span className="track-size">대상 {info.total}명 · 보냄 {info.sent} · 남음 {info.pending}{info.sending > 0 && ` (보내는 중 ${info.sending})`}</span>
+            </div>
+            <p className="muted">{card.desc}</p>
+            {info.note && <p className="note">{info.note}</p>}
+            {blocked && <p className="form-error">채우지 않은 자리표시가 있어 보낼 수 없습니다: {info.placeholders.join(' ')} (src/content.js)</p>}
+            <div className="actions">
+              <button className="btn primary" disabled={busy || !mail.ready || blocked || !info.pending} onClick={() => run(card, 'send_mail')}>
+                남은 {info.pending}명에게 보내기
+              </button>
+              <button className="btn ghost" disabled={busy || !mail.ready} onClick={() => run(card, 'test_mail')}>나에게 테스트 발송</button>
+            </div>
+            {r && (
+              <p className="notice" role="status">
+                {r.test
+                  ? `${r.to}로 테스트 메일 ${r.sent}통을 보냈습니다.`
+                  : r.sent + r.failed === 0
+                    ? '새로 보낼 대상이 없었습니다.'
+                    : `${r.sent}명에게 보냈습니다.${r.failed ? ` ${r.failed}명은 보내지 못했습니다.` : ''}`}
+              </p>
+            )}
+            {info.failed.length > 0 && (
+              <>
+                <p className="field-error mail-failed">보내지 못한 {info.failed.length}명 — 다시 보내기를 누르면 함께 보냅니다.</p>
+                <ul className="member-list">
+                  {info.failed.map((f) => (
+                    <li key={f.email}><span>{f.name} <span className="note">{f.email}</span></span><span className="note">{f.error}</span></li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <details className="mail-preview">
+              <summary>미리보기</summary>
+              {info.previews.map((p) => (
+                <div key={p.label}>
+                  <p className="note">{p.label}</p>
+                  <pre className="pre">{`제목: ${p.subject}\n\n${p.text}`}</pre>
+                </div>
+              ))}
+            </details>
+          </div>
+        )
+      })}
     </section>
   )
 }

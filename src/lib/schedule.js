@@ -38,6 +38,13 @@ export function formatEventDates(start, end) {
   return a.y === b.y && a.m === b.m && a.d === b.d ? head : `${head} – ${p2(b.m)}.${p2(b.d)} (${b.w})`
 }
 
+// 2026.11.03 (화) 10:00. 값이 없으면 null
+export function formatKstDateTime(value) {
+  if (!value) return null
+  const t = kst(value)
+  return `${t.y}.${p2(t.m)}.${p2(t.d)} (${t.w}) ${p2(t.h)}:${p2(t.min)}`
+}
+
 // 타임테이블 n일차(0부터) 날짜: 행사 시작일 + n일 → 11.14 (토)
 export function formatEventDay(start, n) {
   if (!start) return UNSET

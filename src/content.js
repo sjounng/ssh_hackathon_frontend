@@ -254,3 +254,48 @@ export const PRIVACY = {
   ],
   effective: '[YYYY.MM.DD]',
 }
+
+// 안내 메일 문구 (관리자 페이지 > 메일에서 발송). 중괄호 값은 보낼 때 채워진다:
+//   {event} 행사명 · {name} 받는 사람 이름 · {team} '○○ 팀' (이름이 없으면 '새 팀')
+//   {eventDates} 행사 일시 · {teamAssignAt} 팀 배정 발표 시각 (일정이 비어 있으면 '추후')
+//   {members} 팀원 목록 — 한 줄에 한 명씩, 문단 하나를 통째로 차지해야 한다
+// 대괄호 자리표시([ ])가 남아 있으면 일괄 발송을 막는다 (나에게 테스트 발송은 된다)
+export const MAIL = {
+  footer: ['이 메일은 {event} 참가 신청자에게 보내는 안내입니다. 문의: [문의 채널]'],
+  approvedSolo: {
+    subject: '{event} 선발 결과 안내',
+    body: [
+      '{name}님, {event}에 선발되신 것을 축하드립니다.',
+      '개인으로 신청하셨으므로 운영진이 팀을 배정합니다. 배정 결과는 {teamAssignAt}에 메일과 사이트의 내 팀 페이지로 알려 드립니다.',
+      '행사 일시: {eventDates}',
+    ],
+    action: { label: '내 정보 보기', path: '/me' },
+  },
+  approvedTeam: {
+    subject: '{event} 선발 결과 안내',
+    body: [
+      '{name}님, {team}이 {event}에 선발되신 것을 축하드립니다.',
+      '팀 정보와 결과물 제출은 사이트의 내 팀 페이지에서 확인할 수 있습니다.',
+      '행사 일시: {eventDates}',
+    ],
+    action: { label: '내 팀 보기', path: '/team' },
+  },
+  rejected: {
+    subject: '{event} 선발 결과 안내',
+    body: [
+      '{name}님, {event}에 관심을 가지고 신청해 주셔서 감사합니다.',
+      '아쉽게도 이번에는 함께하지 못하게 되었습니다. 많은 분이 신청해 주셔서 모든 분을 모시지 못한 점 양해 부탁드립니다.',
+      '다음 행사에서 다시 뵙기를 바랍니다.',
+    ],
+  },
+  assignment: {
+    subject: '{event} 팀 배정 안내',
+    body: [
+      '{name}님은 {team}에 배정되었습니다. 팀원은 다음과 같습니다.',
+      '{members}',
+      '행사 전에 팀원들과 미리 인사를 나눠 보세요. 팀명이 아직 없다면 내 팀 페이지에서 정할 수 있습니다.',
+      '행사 일시: {eventDates}',
+    ],
+    action: { label: '내 팀 보기', path: '/team' },
+  },
+}

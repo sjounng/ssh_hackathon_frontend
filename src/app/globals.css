@@ -409,6 +409,13 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 .schedule-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0 20px; }
 .invite-form { display: grid; grid-template-columns: 1.4fr auto 1fr auto; gap: 8px; margin-top: 12px; }
 .search { max-width: 240px; }
+.mail-card { display: grid; gap: 12px; }
+.mail-card .track-head { margin-bottom: 0; }
+.mail-card .actions { margin-top: 4px; }
+.mail-card .notice, .mail-failed { margin: 0; }
+.mail-preview summary { cursor: pointer; font-size: 14px; color: var(--ink-soft); }
+.mail-preview > div { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.mail-preview pre { margin-top: 8px; font-family: var(--body); font-size: 14px; line-height: 1.65; color: var(--ink-soft); }
 @media (max-width: 860px) {
   .admin-assign, .schedule-grid, .invite-form { grid-template-columns: 1fr; }
   .admin-row-main { grid-template-columns: auto 1fr auto; }

@@ -3,6 +3,10 @@ import {
   AdminError, addInvite, addMember, createTeam, decide, getAdminData, removeInvite, removeMember,
   requireAdmin, saveConfig, setLeader, setPresentationOrder, setRole,
 } from '../../../lib/admin.js'
+import { MailError, sendMail, sendTestMail } from '../../../lib/mail.js'
+
+// 메일을 여러 번에 나눠 보내므로 넉넉히 둔다 (Vercel 함수 실행 시간)
+export const maxDuration = 60
 
 // 관리자 API (기획서 기능 9). 운영진만 사용. GET은 화면 데이터, POST는 작업 후 바뀐 데이터를 돌려준다
 const ACTIONS = {
@@ -16,6 +20,9 @@ const ACTIONS = {
   set_role: (a, b) => setRole(a, b.userId, b.role),
   add_invite: (a, b) => addInvite(b.email, b.role, b.note),
   remove_invite: (a, b) => removeInvite(b.email),
+  // 메일: 결과({ sent, failed } 등)를 화면 데이터와 함께 돌려준다
+  send_mail: (a, b, ctx) => sendMail(a, b.kind, ctx.origin),
+  test_mail: (a, b, ctx) => sendTestMail(ctx.admin, b.kind, ctx.origin),
 }
 
 export async function GET() {
@@ -37,11 +44,13 @@ export async function POST(request) {
   const action = ACTIONS[body.action]
   if (!action) return NextResponse.json({ error: '알 수 없는 작업입니다.' }, { status: 400 })
 
+  let result
   try {
-    await action(admin.id, body)
+    result = await action(admin.id, body, { admin, origin: new URL(request.url).origin })
   } catch (e) {
-    if (e instanceof AdminError) return NextResponse.json({ error: e.message, code: e.code }, { status: 409 })
+    if (e instanceof AdminError || e instanceof MailError) return NextResponse.json({ error: e.message, code: e.code }, { status: 409 })
     throw e
   }
-  return NextResponse.json(await getAdminData())
+  const data = await getAdminData()
+  return NextResponse.json(body.action.endsWith('_mail') ? { ...data, result } : data)
 }
