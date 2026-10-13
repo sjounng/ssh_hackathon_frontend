@@ -5,6 +5,7 @@ import Hud from '../components/Hud.jsx'
 import LiquidGlassFilter from '../components/LiquidGlassFilter.jsx'
 import SiteFooter from '../components/SiteFooter.jsx'
 import { currentUser } from '../auth.js'
+import { EVENT } from '../content.js'
 import './globals.css'
 
 const unbounded = Unbounded({ subsets: ['latin'], weight: ['400', '600', '800'], variable: '--font-unbounded' })
@@ -12,8 +13,8 @@ const interTight = Inter_Tight({ subsets: ['latin'], weight: ['400', '500', '600
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains' })
 
 export const metadata = {
-  title: '연합 해커톤',
-  description: '한양대 × 성균관대 × 서강대 연합 해커톤',
+  title: EVENT.name,
+  description: EVENT.summary,
 }
 
 export const viewport = {

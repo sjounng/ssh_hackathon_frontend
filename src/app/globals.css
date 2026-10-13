@@ -530,6 +530,7 @@ h3 { font-size: 20px; font-weight: 600; }
 .award-rank { font-size: 15px; color: var(--ink-soft); margin-bottom: auto; }
 .award-amount { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3.4vw, 48px); letter-spacing: -0.03em; }
 .award.highlight .award-amount { font-size: clamp(38px, 4.6vw, 68px); }
+.prizes-note { margin-top: 20px; }
 .benefits { margin-top: 48px; display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
 .benefits ul { display: grid; }
 .benefits ul { gap: 10px; }
@@ -575,7 +576,7 @@ h3 { font-size: 20px; font-weight: 600; }
 .phases li.done .phase-label { color: var(--ink-soft); }
 .phases li.now .phase-label { color: #fff; }
 .phase-date { font-size: 12px; color: var(--ink-faint); }
-.timetable { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.timetable { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
 .day-head { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--ink-soft); }
 .day-head .mono { color: var(--ink); font-weight: 500; }
 .day li { display: grid; grid-template-columns: 72px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }

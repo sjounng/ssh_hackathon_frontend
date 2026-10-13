@@ -19,7 +19,7 @@ export default function Hero({ schedule }) {
           <div><dt>장소</dt><dd><Ph>{EVENT.venue}</Ph></dd></div>
           <div>
             <dt>주최</dt>
-            <dd>{HOSTS.map((h) => h.short).join(' · ')}</dd>
+            <dd>{HOSTS.map((h) => `${h.short} ${h.club}`).join(' · ')}</dd>
           </div>
           <div><dt>모집</dt><dd><Ph>{EVENT.capacity}</Ph></dd></div>
         </dl>

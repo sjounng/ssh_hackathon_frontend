@@ -1,22 +1,22 @@
-// 랜딩 페이지의 모든 문구.
+// 랜딩 페이지의 모든 문구. 기준: 「2027 서성한 연합 해커톤 행사 기획서」(2026-10-13판)
 // 문구는 이 파일만 고치면 된다. 대괄호([ ])로 감싼 값은 아직 정해지지 않은 자리표시이며,
 // 화면에도 대괄호째 보이므로 교체할 곳을 쉽게 찾을 수 있다.
 // 일정(날짜)과 팀 인원은 여기 두지 않는다: 관리자 페이지 > 일정(DB)에 넣으면 첫 화면의 일시·신청 버튼·
 // 행사 일정·참가 자격에 그대로 보인다. 비어 있는 날짜는 '[미정]'으로 보인다.
 
 export const EVENT = {
-  name: '[행사명]',
-  eyebrow: '한양대 × 성균관대 × 서강대 연합 해커톤',
-  summary: '[행사를 한두 문장으로 소개하는 문구]',
-  venue: '[장소]',
-  capacity: '[N]명 · [N]시간',
+  name: '2027 서성한 연합 해커톤',
+  eyebrow: 'FORIF × CoMit × INSIGHT',
+  summary: '세 학교 학생들이 팀을 이루어 하루 동안 서비스를 기획하고 MVP(최소 기능 제품)를 개발한 뒤, 결과물을 발표하고 심사를 받는 연합 해커톤입니다.',
+  venue: '한양대학교 IT/BT관 508호',
+  capacity: '100명 내외 · 13시간',
 }
 
-// 주최 학교. 로그인 허용 도메인의 실제 기준은 DB의 allowed_domains 테이블이다 (여기 domain은 표시용)
+// 주최 학교와 동아리. 로그인 허용 도메인의 실제 기준은 DB의 allowed_domains 테이블이다 (여기 domain은 표시용)
 export const HOSTS = [
-  { key: 'hy', name: '한양대학교', short: '한양대', domain: '@hanyang.ac.kr' },
-  { key: 'sk', name: '성균관대학교', short: '성균관대', domain: '@g.skku.edu' },
-  { key: 'sg', name: '서강대학교', short: '서강대', domain: '@u.sogang.ac.kr' },
+  { key: 'hy', name: '한양대학교', short: '한양대', club: 'FORIF', domain: '@hanyang.ac.kr' },
+  { key: 'sk', name: '성균관대학교', short: '성균관대', club: 'CoMit', domain: '@g.skku.edu' },
+  { key: 'sg', name: '서강대학교', short: '서강대', club: 'INSIGHT', domain: '@u.sogang.ac.kr' },
 ]
 
 // 신청 버튼이 여는 주소. 버튼은 관리자 일정의 신청 시작~마감 사이에만 활성화된다
@@ -71,29 +71,34 @@ export const PAGES = {
 }
 
 export const ABOUT = {
-  title: '[행사 소개 제목]',
+  title: '서성한이 함께 만드는 하루',
   body: [
-    '[행사 소개 첫 문단 — 어떤 해커톤인지, 왜 세 학교가 함께하는지]',
-    '[행사 소개 둘째 문단 — 참가자가 경험하게 될 것]',
+    '‘서성한’으로 함께 불리는 서강대·성균관대·한양대의 학생들이 한자리에 모여 아이디어와 기술을 나눕니다. 세 학교의 프로그래밍 동아리 FORIF, CoMit, INSIGHT가 함께 주최합니다.',
+    '팀을 이루어 아이디어 기획부터 설계, 개발, 발표까지 프로젝트의 전 과정을 직접 이끌어 봅니다. 하루 동안 완성한 결과물과 개발 과정은 포트폴리오로 남고, 다른 학교 참가자들과의 교류는 행사 뒤에도 이어집니다.',
   ],
   topic: {
     label: '주제',
-    title: '[해커톤 주제]',
-    desc: '[주제 설명 — 어떤 문제를 풀면 되는지]',
+    title: '당일 공개',
+    desc: '주제는 행사 당일 OT에서 발표합니다. 제한된 시간 안에 그 주제의 문제를 풀고, 핵심 기능을 갖춘 MVP를 만들어 발표합니다.',
   },
 }
 
 export const PRIZES = {
   awards: [
-    { rank: '대상', amount: '[금액]', highlight: true },
-    { rank: '최우수상', amount: '[금액]' },
-    { rank: '우수상', amount: '[금액]' },
+    { rank: '대상 · 1팀', amount: '[금액]', highlight: true },
+    { rank: '최우수상 · 1팀', amount: '[금액]' },
+    { rank: '우수상 · 1팀', amount: '[금액]' },
   ],
-  benefits: ['[참가자 전원 혜택 1]', '[참가자 전원 혜택 2]', '[참가자 전원 혜택 3]'],
+  note: '수상 팀에는 상금과 부상을 드립니다. 후원사 특별상은 후원사가 정해지면 공개합니다.',
+  benefits: [
+    '하루 만에 기획부터 개발, 발표까지 — 포트폴리오로 남는 프로젝트',
+    '세 학교 개발자들과의 교류와 네트워크',
+    '[식사 등 참가자 전원 제공 항목]',
+  ],
 }
 
 export const ELIGIBILITY = {
-  intro: '주최 학교의 Google 계정으로 로그인하면 누구나 신청할 수 있습니다.',
+  intro: '한양대·성균관대·서강대 재학생과 휴학생이라면 전공·학년과 관계없이 신청할 수 있습니다. 학교 Google 계정으로 로그인해 신청합니다.',
   tracks: [
     {
       key: 'team',
@@ -119,6 +124,7 @@ export const ELIGIBILITY = {
     },
   ],
   notes: [
+    '참가비는 20,000원입니다. [납부 방법과 시기]',
     '선발 결과는 승인 또는 거절로만 안내하며, 신청자 전원에게 메일로 보냅니다.',
     '신청 내용은 마감 전까지 수정할 수 있습니다.',
     '행사가 시작되기 전 모든 참가자는 팀에 속하며, 제출·평가·수상은 팀 단위로 진행합니다.',
@@ -129,8 +135,8 @@ export const ELIGIBILITY = {
 export const REVIEW = {
   intro: '초청한 외부 심사위원이 제출된 프로젝트를 심사합니다.',
   principles: [
-    { title: '외부 심사위원', desc: '[초청 심사위원 구성 — 예: 현업 개발자, 기업 관계자, 교수진]' },
-    { title: '심사 대상', desc: '결과물을 제출한 팀의 프로젝트를 심사합니다. [발표·시연 등 심사 진행 방식]' },
+    { title: '외부 심사위원', desc: '[초청 심사위원 구성 — 예: 현업 개발자, 후원사 관계자]' },
+    { title: '심사 대상', desc: '결과물을 최종 제출한 팀의 프로젝트를 심사합니다. 제출이 끝나면 팀별로 결과물을 발표하고, 심사위원이 발표를 보고 심사합니다.' },
     { title: '평가 항목', desc: '심사위원이 정해진 평가 항목에 따라 점수를 매깁니다. [점수 척도]' },
     { title: '순위 결정', desc: '[심사 점수 합산 방식과 동점 처리 기준]' },
   ],
@@ -156,48 +162,41 @@ export const PHASES = [
   { key: 'results', label: '결과 발표', from: 'results_announce_at' },
 ]
 
-// 당일 타임테이블. 날짜는 관리자 일정의 행사 시작일로부터 DAY 1, DAY 2… 순서로 계산한다
+// 당일 타임테이블 (무박 1일). 날짜는 관리자 일정의 행사 시작일로부터 첫째 날, 둘째 날… 순서로 계산한다
 export const TIMETABLE = [
   {
-    day: 'DAY 1',
+    day: 'D-DAY',
     rows: [
-      { time: '[10:00]', title: '[체크인]' },
-      { time: '[10:30]', title: '[개회식 · 주제 발표]' },
-      { time: '[11:00]', title: '[해커톤 시작]' },
-      { time: '[18:00]', title: '[저녁 식사]' },
-      { time: '[22:00]', title: '[중간 점검]' },
-    ],
-  },
-  {
-    day: 'DAY 2',
-    rows: [
-      { time: '[08:00]', title: '[아침 식사]' },
-      { time: '[12:00]', title: '[결과물 제출 마감]' },
-      { time: '[13:00]', title: '[프로젝트 발표]' },
-      { time: '[15:00]', title: '[심사]' },
-      { time: '[17:00]', title: '[폐회]' },
+      { time: '09:00', title: 'OT — 행사 소개, 진행 규칙과 주제 안내' },
+      { time: '10:00', title: '1차 개발 — 팀별 기획과 개발' },
+      { time: '12:00', title: '점심 식사와 휴식' },
+      { time: '13:00', title: '2차 개발' },
+      { time: '18:00', title: '저녁 식사와 휴식' },
+      { time: '19:50', title: '결과물 최종 제출' },
+      { time: '20:00', title: '팀별 결과물 발표와 심사' },
+      { time: '21:30', title: '시상식 · 폐회식' },
     ],
   },
 ]
 
 export const CTA = {
-  title: '[신청을 유도하는 마무리 문구]',
-  sub: '[신청 안내 보조 문구]',
+  title: '세 학교와 함께, 하루 만에 만들어 보세요',
+  sub: '팀으로도, 혼자서도 신청할 수 있습니다. 혼자 신청하면 운영진이 팀을 배정합니다.',
 }
 
 export const FOOTER = {
   contacts: [
-    { label: '[문의 채널 1 — 예: 카카오톡 채널]', href: '#' },
-    { label: '[문의 채널 2 — 예: 이메일]', href: '#' },
+    { label: 'contact@forif.org', href: 'mailto:contact@forif.org' },
+    { label: '[인스타그램 계정]', href: '#' },
   ],
   privacyHref: '/privacy',
-  copyright: '© [연도] [주최 단체명]',
+  copyright: '© 2026 FORIF · CoMit · INSIGHT',
 }
 
 // 개인정보 처리방침 (/privacy). 프로필 입력 화면의 동의 체크박스와 푸터가 이 페이지를 연결한다.
 // 초안이므로 대괄호 값을 채우고, 운영 전에 주최 측(학교 담당 부서 등)의 검토를 받는다
 export const PRIVACY = {
-  intro: '[주최 단체명]은 연합 해커톤 운영에 필요한 최소한의 개인정보만 수집하며, 아래 목적 외에는 쓰지 않습니다.',
+  intro: '2027 서성한 연합 해커톤 운영진(한양대학교 FORIF · 성균관대학교 CoMit · 서강대학교 INSIGHT)은 행사 운영에 필요한 최소한의 개인정보만 수집하며, 아래 목적 외에는 쓰지 않습니다.',
   // 동의를 받을 때 반드시 알려야 하는 네 가지 (개인정보 보호법 제15조 제2항)
   consent: [
     {
@@ -228,9 +227,9 @@ export const PRIVACY = {
       items: [
         '사이트 운영을 위해 아래 업체에 개인정보 처리를 맡기며, 일부는 국외 서버에 저장될 수 있습니다.',
         'Supabase — 데이터베이스·파일 저장 [서버 지역]',
-        'Vercel — 웹사이트 호스팅 [서버 지역]',
+        'Vercel — 웹사이트 호스팅 (미국)',
         'Google — 로그인',
-        'Resend — 안내 메일 발송',
+        'Resend — 안내 메일 발송 (일본)',
       ],
     },
     {
@@ -249,7 +248,7 @@ export const PRIVACY = {
     },
     {
       title: '개인정보 보호 책임자',
-      items: ['[담당자 이름 · 소속]', '[연락처 — 이메일]'],
+      items: ['[담당자 이름 · 소속]', '이메일: contact@forif.org'],
     },
   ],
   effective: '[YYYY.MM.DD]',
@@ -261,7 +260,7 @@ export const PRIVACY = {
 //   {members} 팀원 목록 — 한 줄에 한 명씩, 문단 하나를 통째로 차지해야 한다
 // 대괄호 자리표시([ ])가 남아 있으면 일괄 발송을 막는다 (나에게 테스트 발송은 된다)
 export const MAIL = {
-  footer: ['이 메일은 {event} 참가 신청자에게 보내는 안내입니다. 문의: [문의 채널]'],
+  footer: ['이 메일은 {event} 참가 신청자에게 보내는 안내입니다. 문의: contact@forif.org'],
   approvedSolo: {
     subject: '{event} 선발 결과 안내',
     body: [
