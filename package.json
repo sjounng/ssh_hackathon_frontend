@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "oxlint",
     "check:db": "node --env-file=.env.local scripts/check-supabase.mjs",
-    "smoke:apply": "node --conditions=react-server --env-file=.env.local scripts/smoke-apply.mjs"
+    "smoke:apply": "node --conditions=react-server --env-file=.env.local scripts/smoke-apply.mjs",
+    "smoke:team": "node --conditions=react-server --env-file=.env.local scripts/smoke-team.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

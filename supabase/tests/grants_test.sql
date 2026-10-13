@@ -28,6 +28,9 @@ select expect_denied('anon', 'select count(*) from users');
 select expect_denied('authenticated', 'select count(*) from applications');
 select expect_denied('anon', 'insert into users (email) values (''x@y.z'')');
 select expect_denied('authenticated', $q$select apply_join_team('00000000-0000-0000-0000-000000000000', 'AAAAAA')$q$);
+select expect_denied('anon', $q$select admin_assert('00000000-0000-0000-0000-000000000000')$q$);
+select expect_denied('authenticated', $q$select submission_save('00000000-0000-0000-0000-000000000000', '{}', true)$q$);
+select expect_denied('anon', $q$select team_rename('00000000-0000-0000-0000-000000000000', 'x')$q$);
 rollback;
 
 select 'ALL GRANT TESTS PASSED';

@@ -8,3 +8,12 @@ export const APPLICATION_STATUS_LABEL = {
   approved: '승인',
   rejected: '거절',
 }
+
+// 2026.11.15 (일) 12:00 — 브라우저 현지 시각
+const WEEK = ['일', '월', '화', '수', '목', '금', '토']
+export function formatDateTime(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  const p = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} (${WEEK[d.getDay()]}) ${p(d.getHours())}:${p(d.getMinutes())}`
+}

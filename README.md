@@ -54,16 +54,20 @@ npm run start   # 빌드 결과 실행
 ```bash
 npm run check:db      # Supabase 연결, 테이블·함수·버킷 확인 (키 값은 출력하지 않음)
 npm run smoke:apply   # 실제 DB에서 팀 신청 흐름을 돌리고 테스트 데이터를 지움
+npm run smoke:team    # 실제 DB에서 내 팀·결과물 제출(파일 업로드 포함) 흐름을 돌리고 테스트 데이터·파일을 지움
 ```
 
 ### DB 규칙 테스트
 
-참가 신청 규칙은 DB 함수(`supabase/migrations/0002_apply.sql`)에 있고, 로컬 Postgres로 시험할 수 있다.
+참가 신청·관리자·내 팀·결과물 규칙은 DB 함수(`supabase/migrations/0002~0004`)에 있고, 로컬 Postgres로 시험할 수 있다.
+(Supabase처럼 `anon`·`authenticated`·`service_role` 역할과, `storage.buckets`·`storage.objects(bucket_id, name, metadata)` 표를 먼저 만들어 둔다)
 
 ```bash
 # 빈 DB에 마이그레이션을 적용한 뒤
 psql -f supabase/tests/apply_test.sql   # 끝까지 가면 'ALL APPLY TESTS PASSED'
 psql -f supabase/tests/admin_test.sql   # 'ALL ADMIN TESTS PASSED' (새 DB에서)
+psql -f supabase/tests/team_test.sql    # 'ALL TEAM TESTS PASSED' (새 DB에서)
+psql -f supabase/tests/grants_test.sql  # 'ALL GRANT TESTS PASSED'
 ```
 
 ## 배포

@@ -533,7 +533,7 @@ h3 { font-size: 20px; font-weight: 600; }
 /* 두 박스 높이를 맞추고, 마지막 결과 문구는 항상 아래쪽 같은 높이에 */
 .track { display: flex; flex-direction: column; }
 .track ol { flex: 1; align-content: start; }
-.track-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+.track-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 18px; }
 .track-size { font-size: 14px; color: var(--ink-soft); }
 .track-head h3 { font-family: var(--display); font-size: 26px; }
 .track ol { counter-reset: step; display: grid; gap: 14px; }
@@ -643,3 +643,31 @@ h3 { font-size: 20px; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ---------- 내 팀 · 결과물 제출 ---------- */
+.team-members dd { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; }
+.team-members dd a:hover { color: var(--ink); }
+.team-note { margin-top: 16px; font-size: 14px; }
+.team-edit { display: grid; gap: 4px; }
+.team-edit .inline-form:first-child { margin-top: 0; }
+.team-project { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+.form-group { font-size: 15px; font-weight: 600; margin-top: 8px; padding-top: 20px; border-top: 1px solid var(--line); }
+/* 파일 칸: 입력칸과 같은 유리 상자 안에 파일 이름과 버튼 */
+.file-field {
+  display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 6px 6px 6px 16px; border-radius: 16px;
+  background: var(--lg-fill); box-shadow: var(--lg-field-edge);
+  -webkit-backdrop-filter: blur(3px) saturate(1.6); backdrop-filter: url(#lg-bar) saturate(1.6);
+}
+.file-field .btn { box-shadow: var(--lg-edge); }
+.file-name { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-name.placeholder { color: var(--ink-faint); }
+.file-preview { margin-left: -10px; width: 64px; height: 38px; object-fit: cover; border-radius: 10px; box-shadow: var(--lg-edge); }
+.file-preview.large { width: 100%; height: auto; max-height: 360px; border-radius: 14px; margin-bottom: 18px; }
+/* 올리는 중: 가는 빛 막대 */
+.file-progress { display: block; height: 2px; border-radius: 2px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.85) var(--p), rgba(255, 255, 255, 0.1) var(--p)); }
+.submission-rows { margin-top: 20px; }
+.submission-rows dd { overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .team-members > div { grid-template-columns: 1fr; gap: 6px; }
+}
+.lede + .actions { margin-top: 28px; }

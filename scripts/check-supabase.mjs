@@ -33,6 +33,20 @@ else {
   console.log(`✗ 참가 신청 함수: ${fnErr?.message ?? '예상과 다른 응답'}`)
 }
 
+// 이후 마이그레이션: 없는 사용자로 호출해 함수가 있는지만 본다 (있으면 정해진 오류 코드가 돌아온다)
+const NOBODY = '00000000-0000-0000-0000-000000000000'
+for (const [file, label, fn, params, codes] of [
+  ['0003_admin.sql', '관리자 함수', 'admin_assert', { p_admin: NOBODY }, ['NOT_ADMIN']],
+  ['0004_team.sql', '내 팀·결과물 함수', 'team_set_role', { p_user: NOBODY, p_role: 'x' }, ['NOT_APPROVED']],
+]) {
+  const { error } = await db.rpc(fn, params)
+  if (codes.includes(error?.message)) console.log(`✓ ${label} (${file})`)
+  else {
+    ok = false
+    console.log(`✗ ${label} (${file}): ${error?.message ?? '예상과 다른 응답'} — SQL Editor에서 ${file}을 실행했는지 확인`)
+  }
+}
+
 const { data: buckets, error: bErr } = await db.storage.listBuckets()
 if (bErr) console.log(`✗ 파일 저장소: ${bErr.message}`)
 else console.log(`${buckets.some((b) => b.id === 'submissions') ? '✓' : '✗'} 파일 저장소 버킷 'submissions'`)
