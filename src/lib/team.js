@@ -52,6 +52,18 @@ export const FILE_RULES = {
 
 const clip = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '')
 
+// 팀 폴더({팀 id}/)에서 keep에 없는 파일을 지운다: 올리기만 하고 저장하지 않은 파일, 새 파일로 바뀐 옛 파일, 없어진 팀의 파일.
+// 저장·삭제는 이미 끝난 뒤라 실패해도 무시한다
+export async function cleanTeamFiles(teamId, keep = []) {
+  try {
+    const { data } = await db().storage.from(BUCKET).list(teamId, { limit: 1000 })
+    const stale = (data ?? []).filter((f) => f.id).map((f) => `${teamId}/${f.name}`).filter((p) => !keep.includes(p))
+    if (stale.length) await db().storage.from(BUCKET).remove(stale)
+  } catch {
+    // 다음 저장 때 다시 정리된다
+  }
+}
+
 export const teamActions = {
   rename: (u, b) => rpc('team_rename', { p_user: u, p_name: clip(b.name, 60) }),
   set_role: (u, b) => rpc('team_set_role', { p_user: u, p_role: clip(b.role, 60) }),
@@ -83,9 +95,9 @@ export const teamActions = {
       deploy_url: clip(s.deployUrl, 1000),
       pledge: s.pledge === true,
     }
-    const r = await rpc('submission_save', { p_user: u, p, p_submit: b.submit === true })
-    // 새 파일로 바뀐 옛 파일은 지운다 (실패해도 저장은 끝났으므로 무시)
-    if (r.removed?.length) await db().storage.from(BUCKET).remove(r.removed).catch(() => {})
+    const { submission: s2 } = await rpc('submission_save', { p_user: u, p, p_submit: b.submit === true })
+    // 저장한 결과물이 쓰는 파일만 남긴다
+    await cleanTeamFiles(s2.team_id, [s2.cover_image_path, s2.slides_path].filter(Boolean))
     return null
   },
 }

@@ -3,6 +3,7 @@ import { currentUser } from '../auth.js'
 import { db } from './supabase.js'
 import { getUserById } from './users.js'
 import { mailSummary } from './mail.js'
+import { cleanTeamFiles } from './team.js'
 
 // 관리자 (기획서 기능 9). 여러 행을 함께 바꾸는 작업은 DB 함수(0003_admin.sql), 단순 조회·수정은 여기서 한다
 
@@ -42,6 +43,8 @@ async function rpc(fn, params) {
   const { data, error } = await db().rpc(fn, params)
   if (error) {
     if (ADMIN_ERRORS[error.message]) throw new AdminError(error.message)
+    // uuid가 아닌 값 등 형식이 틀린 입력 (22P02 invalid_text_representation)
+    if (error.code === '22P02') throw new AdminError('INVALID_INPUT')
     throw error
   }
   return data
@@ -70,9 +73,18 @@ export async function getAdminData() {
 export const decide = (admin, ids, status) => rpc('admin_decide', { p_admin: admin, p_application_ids: ids, p_status: status })
 export const createTeam = (admin, name, userIds, leader) => rpc('admin_create_team', { p_admin: admin, p_name: name, p_user_ids: userIds, p_leader: leader || null })
 export const addMember = (admin, team, user) => rpc('admin_add_member', { p_admin: admin, p_team: team, p_user: user })
-export const removeMember = (admin, team, user) => rpc('admin_remove_member', { p_admin: admin, p_team: team, p_user: user })
+// 마지막 팀원을 빼면 팀이 없어지므로, 그 팀이 올린 파일도 지운다
+export async function removeMember(admin, team, user) {
+  await rpc('admin_remove_member', { p_admin: admin, p_team: team, p_user: user })
+  const { data } = await db().from('teams').select('id').eq('id', team).maybeSingle()
+  if (!data) await cleanTeamFiles(team)
+}
 export const setLeader = (admin, team, user) => rpc('admin_set_leader', { p_admin: admin, p_team: team, p_user: user })
-export const setPresentationOrder = (admin, teamIds) => rpc('admin_set_presentation_order', { p_admin: admin, p_team_ids: teamIds })
+// 같은 팀이 두 번 들어가면 번호가 비므로 미리 거른다
+export function setPresentationOrder(admin, teamIds) {
+  if (!Array.isArray(teamIds) || new Set(teamIds).size !== teamIds.length) throw new AdminError('INVALID_INPUT')
+  return rpc('admin_set_presentation_order', { p_admin: admin, p_team_ids: teamIds })
+}
 
 // ── 일정 ──
 const DATE_FIELDS = [

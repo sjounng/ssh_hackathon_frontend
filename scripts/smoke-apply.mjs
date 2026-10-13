@@ -14,9 +14,15 @@ if (error) throw error
 const [A, B, C] = emails.map((e) => users.find((u) => u.email === e).id)
 const run = (u, action, body = {}) => applyActions[action](u, normalizeApplyBody({ action, ...body }))
 
-try {
-  await run(A, 'create_team', { name: '스모크 팀' })
+async function steps() {
   let s = await getApplyState(A)
+  if (!s.window.isOpen) {
+    console.log('! 지금은 신청 기간이 아니라 점검할 수 없습니다. 관리자 > 일정에서 신청 시작·마감을 비우거나 지금이 포함되게 두고 다시 실행하세요')
+    process.exitCode = 1
+    return
+  }
+  await run(A, 'create_team', { name: '스모크 팀' })
+  s = await getApplyState(A)
   assert.equal(s.team.name, '스모크 팀')
   assert.equal(s.team.joinCode.length, 6)
   console.log(`✓ 팀 만들기 (참가 코드 ${s.team.joinCode.length}자리)`)
@@ -48,6 +54,10 @@ try {
   assert.equal(s.team.members.length, 2)
   assert.equal(s.application.status, 'draft')
   console.log('✓ 제출 취소 → 팀원 나가기')
+}
+
+try {
+  await steps()
 } finally {
   // 테스트 데이터 정리 (팀 → 신청·팀원은 연쇄 삭제, 사용자 삭제)
   const { data: teams } = await db().from('teams').select('id').in('leader_id', [A, B, C])
