@@ -16,6 +16,7 @@ export default function Prizes() {
           </article>
         ))}
       </div>
+      {PRIZES.note && <p className="muted prizes-note"><Ph>{PRIZES.note}</Ph></p>}
 
       <div className="benefits">
         <p className="label">참가자 전원</p>

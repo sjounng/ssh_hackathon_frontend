@@ -6,12 +6,17 @@ import { useEffect, useState } from 'react'
 import { EVENT, NAV } from '../content.js'
 import Ph from './Ph.jsx'
 
-// 지금 사용자에게 보여줄 메뉴 권한. 로그인 기능이 붙기 전이라 운영진 메뉴를 뺀 전체를 미리 보여준다.
-// 로그인·운영진·심사위원 권한이 생기면 사용자 정보로 이 목록을 만들면 된다 (기획서 기능 0)
-const VIEWER_ACCESS = ['public', 'member', 'participant', 'team', 'judge']
+// 사용자별 메뉴 권한 (기획서 기능 0). 비로그인에게도 '참가 신청'은 보여주고, 누르면 로그인으로 이어진다.
+// 참가자 세부 단계(승인·팀 소속)에 따른 분기는 해당 기능을 만들 때 좁힌다
+function accessFor(user) {
+  if (!user) return ['public', 'member']
+  if (user.role === 'admin') return ['public', 'member', 'participant', 'team', 'judge', 'admin']
+  if (user.role === 'judge') return ['public', 'judge']
+  return ['public', 'member', 'participant', 'team']
+}
 
 // 공통 헤더: 기능 페이지로 이동하는 메뉴
-export default function Header() {
+export default function Header({ user }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -36,7 +41,9 @@ export default function Header() {
   // 페이지를 옮기면 모바일 메뉴를 닫는다
   useEffect(() => setOpen(false), [pathname])
 
-  const items = NAV.filter((n) => VIEWER_ACCESS.includes(n.access))
+  const access = accessFor(user)
+  const items = NAV.filter((n) => access.includes(n.access))
+  const meActive = pathname === '/me' || pathname.startsWith('/me/')
   const hidden = isLanding && away && !open
 
   return (
@@ -56,7 +63,11 @@ export default function Header() {
         })}
       </nav>
       <div className="nav-right">
-        <Link className={`btn small ghost ${pathname === '/login' ? 'active' : ''}`} href="/login">로그인</Link>
+        {user ? (
+          <Link className={`btn small ghost ${meActive ? 'active' : ''}`} href="/me">{user.name || '내 정보'}</Link>
+        ) : (
+          <Link className={`btn small ghost ${pathname === '/login' ? 'active' : ''}`} href="/login">로그인</Link>
+        )}
         <button className="menu-btn" aria-label="메뉴 열기" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <span /><span />
         </button>
