@@ -39,6 +39,7 @@ for (const [file, label, fn, params, codes] of [
   ['0003_admin.sql', '관리자 함수', 'admin_assert', { p_admin: NOBODY }, ['NOT_ADMIN']],
   ['0004_team.sql', '내 팀·결과물 함수', 'team_set_role', { p_user: NOBODY, p_role: 'x' }, ['NOT_APPROVED']],
   ['0006_mail.sql', '메일 발송 함수', 'mail_finish', { p_admin: NOBODY, p_results: [] }, ['NOT_ADMIN']],
+  ['0008_judging.sql', '심사 함수', 'judge_save_scores', { p_judge: NOBODY, p_team: NOBODY, p_scores: [] }, ['NOT_JUDGE']],
 ]) {
   const { error } = await db.rpc(fn, params)
   if (codes.includes(error?.message)) console.log(`✓ ${label} (${file})`)

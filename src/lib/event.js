@@ -7,6 +7,17 @@ const PUBLIC_FIELDS = [
   'submit_deadline_at', 'judging_start_at', 'judging_end_at', 'results_announce_at', 'team_min_size', 'team_max_size',
 ]
 
+// 평가 항목 (관리자 > 심사). 첫 화면 '평가 방식'에 이름·비중·점수 범위를 보여 준다. DB에 닿지 못하면 빈 목록
+export async function getPublicCriteria() {
+  try {
+    const { data, error } = await db().from('criteria').select('name, min_score, max_score, weight').order('sort_order').order('created_at')
+    if (error) throw error
+    return data
+  } catch {
+    return []
+  }
+}
+
 // DB에 닿지 못하면 null: 날짜는 '[미정]', 신청 버튼은 비활성으로 그린다
 export async function getPublicSchedule() {
   try {

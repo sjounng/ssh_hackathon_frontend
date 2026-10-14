@@ -30,7 +30,11 @@ export const ADMIN_ERRORS = {
   NOT_IN_TEAM: '그 팀의 팀원이 아닙니다.',
   INVALID_INPUT: '입력값을 확인해 주세요.',
   SELF_ROLE: '자기 자신의 운영진 권한은 해제할 수 없습니다.',
+  CRITERION_IN_USE: '이미 매긴 점수가 있는 항목은 점수 범위를 바꿀 수 없습니다. 항목을 새로 만들거나 점수를 지운 뒤 바꿔 주세요.',
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const isUuid = (v) => UUID.test(String(v ?? ''))
 
 export class AdminError extends Error {
   constructor(code) {
@@ -65,7 +69,13 @@ export async function getAdminData() {
     db().from('users').select('id, email, name, school, role, student_id, phone, created_at').order('created_at').then(must),
     db().from('invited_emails').select('email, role, note, created_at').order('created_at').then(must),
   ])
-  const data = { config, applications: apps, teams, members, users, invites }
+  // 심사: 평가 항목, 점수, 결과물 (관리자 > 심사)
+  const [criteria, scores, submissions] = await Promise.all([
+    db().from('criteria').select('id, name, description, min_score, max_score, weight, sort_order').order('sort_order').order('created_at').then(must),
+    db().from('scores').select('judge_id, team_id, criterion_id, score, voided_at').then(must),
+    db().from('submissions').select('team_id, project_name, submitted_at').then(must),
+  ])
+  const data = { config, applications: apps, teams, members, users, invites, criteria, scores, submissions }
   return { ...data, mail: await mailSummary(data) }
 }
 
@@ -110,6 +120,44 @@ export async function saveConfig(input) {
   if ((patch.team_min_size ?? 0) > (patch.team_max_size ?? Infinity)) throw new AdminError('INVALID_INPUT')
   if (patch.apply_open_at && patch.apply_close_at && patch.apply_open_at > patch.apply_close_at) throw new AdminError('INVALID_INPUT')
   return must(await db().from('event_config').update(patch).eq('id', true).select().single())
+}
+
+// ── 심사: 평가 항목과 점수 무효 처리 ──
+export async function saveCriterion(input) {
+  const name = String(input?.name ?? '').trim()
+  const description = String(input?.description ?? '').trim()
+  const [min, max, weight, order] = ['min_score', 'max_score', 'weight', 'sort_order'].map((k) => Number(input?.[k]))
+  if (!name || name.length > 40 || description.length > 200 || !Number.isFinite(min) || !Number.isFinite(max) || min >= max
+      || !(weight >= 0) || !Number.isInteger(order) || (input.id && !isUuid(input.id))) {
+    throw new AdminError('INVALID_INPUT')
+  }
+  const row = { name, description: description || null, min_score: min, max_score: max, weight, sort_order: order }
+  if (!input.id) return must(await db().from('criteria').insert(row).select('id').single())
+
+  // 이미 매긴 점수가 있으면 점수 범위는 바꿀 수 없다 (매긴 점수가 범위를 벗어날 수 있으므로). 이름·설명·가중치는 바꿀 수 있다
+  const cur = must(await db().from('criteria').select('min_score, max_score').eq('id', input.id).maybeSingle())
+  if (!cur) throw new AdminError('INVALID_INPUT')
+  if (Number(cur.min_score) !== min || Number(cur.max_score) !== max) {
+    const { count, error } = await db().from('scores').select('*', { count: 'exact', head: true }).eq('criterion_id', input.id)
+    if (error) throw error
+    if (count) throw new AdminError('CRITERION_IN_USE')
+  }
+  return must(await db().from('criteria').update(row).eq('id', input.id).select('id').single())
+}
+
+// 점수가 있는 항목은 force일 때만 지운다 (점수도 함께 지워진다)
+export async function deleteCriterion(id, force) {
+  if (!isUuid(id)) throw new AdminError('INVALID_INPUT')
+  const { count, error } = await db().from('scores').select('*', { count: 'exact', head: true }).eq('criterion_id', id)
+  if (error) throw error
+  if (count && force !== true) throw new AdminError('CRITERION_IN_USE')
+  must(await db().from('criteria').delete().eq('id', id))
+}
+
+// 심사위원 한 명이 팀 하나에 매긴 점수 전체를 무효 처리하거나 되살린다 (집계에서 빠진다)
+export async function voidScores(judgeId, teamId, voided) {
+  if (!isUuid(judgeId) || !isUuid(teamId)) throw new AdminError('INVALID_INPUT')
+  must(await db().from('scores').update({ voided_at: voided ? new Date().toISOString() : null }).eq('judge_id', judgeId).eq('team_id', teamId))
 }
 
 // ── 계정 ──

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT, formatDateTime } from '../lib/labels.js'
+import { SCORING_RULE, rankTeams, scoredTeamCount, weightShares } from '../lib/scoring.js'
 import DateTimeField from './ui/DateTimeField.jsx'
 import Select from './ui/Select.jsx'
 import Stepper from './ui/Stepper.jsx'
@@ -12,6 +13,7 @@ const TABS = [
   { id: 'assign', label: '팀 배정' },
   { id: 'teams', label: '팀 관리' },
   { id: 'mail', label: '메일' },
+  { id: 'judging', label: '심사' },
   { id: 'schedule', label: '일정' },
   { id: 'accounts', label: '계정' },
 ]
@@ -73,6 +75,7 @@ export default function AdminConsole({ initial, adminId }) {
       {tab === 'assign' && <Assign {...props} />}
       {tab === 'teams' && <Teams {...props} />}
       {tab === 'mail' && <Mail {...props} />}
+      {tab === 'judging' && <Judging {...props} />}
       {tab === 'schedule' && <Schedule {...props} />}
       {tab === 'accounts' && <Accounts {...props} />}
     </>
@@ -410,6 +413,156 @@ function Mail({ data, act, busy }) {
         )
       })}
     </section>
+  )
+}
+
+// ───────────────────────── 심사 ─────────────────────────
+const num = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(1))
+
+function Judging({ data, idx, act, busy }) {
+  const [dialog, confirm] = useConfirm()
+  const [open, setOpen] = useState(null)
+  const { criteria, scores } = data
+  const submitted = data.submissions.filter((s) => s.submitted_at)
+  const teamIds = submitted.map((s) => s.team_id)
+  const projectOf = new Map(data.submissions.map((s) => [s.team_id, s.project_name]))
+  const judges = data.users.filter((u) => u.role === 'judge')
+  const ranking = rankTeams(teamIds, criteria, scores)
+
+  return (
+    <section className="admin-section">
+      {dialog}
+      <CriteriaEditor criteria={criteria} scores={scores} act={act} busy={busy} confirm={confirm} />
+
+      <div className="glass">
+        <div className="track-head"><h3>심사 현황</h3><span className="track-size">최종 제출 {teamIds.length}팀 · 심사위원 {judges.length}명</span></div>
+        {judges.length === 0 && <p className="note">심사위원이 없습니다. 계정 탭에서 심사위원을 초청해 주세요.</p>}
+        <ul className="member-list">
+          {judges.map((j) => (
+            <li key={j.id}>
+              <span>{j.name || '(프로필 미입력)'} <span className="note">{j.email}</span></span>
+              <span className="note">{scoredTeamCount(j.id, teamIds, criteria, scores)}/{teamIds.length}팀 채점</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="glass admin-list">
+        <div className="track-head ranking-head">
+          <h3>순위</h3>
+          <span className="track-size">기본안: {SCORING_RULE} · 무효 처리한 점수는 빠집니다</span>
+        </div>
+        {ranking.length === 0 && <p className="note empty">아직 최종 제출된 팀이 없습니다.</p>}
+        {ranking.map((r) => {
+          const team = idx.team.get(r.teamId)
+          const teamScores = scores.filter((s) => s.team_id === r.teamId)
+          const judgeIds = [...new Set(teamScores.map((s) => s.judge_id))]
+          return (
+            <div key={r.teamId} className="admin-row">
+              <div className="admin-row-main ranking-row">
+                <span className="order mono">{String(r.rank).padStart(2, '0')}</span>
+                <button className="admin-row-title" onClick={() => setOpen(open === r.teamId ? null : r.teamId)}>
+                  {projectOf.get(r.teamId)} <span className="note">{team?.name || '팀명 미정'}</span>
+                </button>
+                <span className="admin-row-sub">심사위원 {r.judges}명</span>
+                <span className="mono">{num(r.total)} / {num(r.max)}</span>
+              </div>
+              {open === r.teamId && (
+                <div className="admin-detail">
+                  <dl className="rows">
+                    {criteria.map((c, i) => (
+                      <div key={c.id}><dt>{c.name}</dt><dd>평균 {r.averages[i] === null ? '-' : num(r.averages[i])} · 가중치 {Number(c.weight)}</dd></div>
+                    ))}
+                  </dl>
+                  <ul className="member-list">
+                    {judgeIds.map((jid) => {
+                      const mine = teamScores.filter((s) => s.judge_id === jid)
+                      const voided = mine.some((s) => s.voided_at)
+                      const by = new Map(mine.map((s) => [s.criterion_id, Number(s.score)]))
+                      return (
+                        <li key={jid}>
+                          <span className={voided ? 'pending' : ''}>
+                            {idx.user.get(jid)?.name || '심사위원'}{voided && ' (무효)'}{' '}
+                            <span className="note">{criteria.map((c) => `${c.name} ${by.has(c.id) ? num(by.get(c.id)) : '-'}`).join(' · ')}</span>
+                          </span>
+                          <button className="btn small ghost" disabled={busy} onClick={async () => {
+                            if (!voided && !(await confirm(`${idx.user.get(jid)?.name || '이 심사위원'}이 이 팀에 매긴 점수를 집계에서 뺄까요? 나중에 되살릴 수 있습니다.`, { ok: '무효 처리', danger: true }))) return
+                            act('void_scores', { judgeId: jid, teamId: r.teamId, voided: !voided })
+                          }}>{voided ? '되살리기' : '무효 처리'}</button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function CriteriaEditor({ criteria, scores, act, busy, confirm }) {
+  const [editing, setEditing] = useState(null) // 항목 id 또는 'new'
+  const shares = weightShares(criteria)
+  const countOf = (id) => scores.filter((s) => s.criterion_id === id).length
+  const nextOrder = criteria.reduce((m, c) => Math.max(m, c.sort_order), 0) + 1
+
+  const save = async (v) => {
+    if (await act('save_criterion', { criterion: v })) setEditing(null)
+  }
+  const remove = async (c) => {
+    const n = countOf(c.id)
+    const msg = n ? `'${c.name}' 항목과 이 항목에 매긴 점수 ${n}개를 지웁니다. 되돌릴 수 없습니다.` : `'${c.name}' 항목을 지울까요?`
+    if (await confirm(msg, { ok: '지우기', danger: true })) act('delete_criterion', { id: c.id, force: n > 0 })
+  }
+
+  return (
+    <div className="glass">
+      <div className="track-head"><h3>평가 항목</h3><span className="track-size">첫 화면의 평가 방식에도 그대로 보입니다</span></div>
+      {criteria.length === 0 && editing !== 'new' && <p className="note">아직 평가 항목이 없습니다. 심사 전에 추가해 주세요.</p>}
+      <ul className="member-list">
+        {criteria.map((c, i) => (editing === c.id ? (
+          <li key={c.id}><CriterionForm initial={c} rangeLocked={countOf(c.id) > 0} busy={busy} onSave={save} onCancel={() => setEditing(null)} /></li>
+        ) : (
+          <li key={c.id}>
+            <span>
+              <strong>{c.name}</strong>{' '}
+              <span className="note">{Number(c.min_score)}~{Number(c.max_score)}점 · 가중치 {Number(c.weight)} ({shares[i]}%)</span>
+              {c.description && <><br /><span className="muted">{c.description}</span></>}
+            </span>
+            <span className="actions">
+              <button className="btn small ghost" disabled={busy} onClick={() => setEditing(c.id)}>수정</button>
+              <button className="btn small ghost" disabled={busy} onClick={() => remove(c)}>삭제</button>
+            </span>
+          </li>
+        )))}
+      </ul>
+      {editing === 'new'
+        ? <CriterionForm initial={{ name: '', description: '', min_score: 1, max_score: 5, weight: 1, sort_order: nextOrder }} busy={busy} onSave={save} onCancel={() => setEditing(null)} />
+        : <div className="actions"><button className="btn small primary" disabled={busy} onClick={() => setEditing('new')}>항목 추가</button></div>}
+    </div>
+  )
+}
+
+function CriterionForm({ initial, rangeLocked, busy, onSave, onCancel }) {
+  const [v, setV] = useState(() => ({ ...initial, description: initial.description ?? '' }))
+  const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }))
+  return (
+    <form className="criterion-form" onSubmit={(e) => { e.preventDefault(); onSave(v) }}>
+      <label className="field wide"><span className="field-label">항목명</span><input type="text" value={v.name} onChange={set('name')} maxLength={40} required /></label>
+      <label className="field wide"><span className="field-label">설명 (심사위원에게 보임)</span><input type="text" value={v.description} onChange={set('description')} maxLength={200} /></label>
+      <label className="field"><span className="field-label">최저점</span><input type="number" step="any" value={v.min_score} onChange={set('min_score')} disabled={rangeLocked} /></label>
+      <label className="field"><span className="field-label">최고점</span><input type="number" step="any" value={v.max_score} onChange={set('max_score')} disabled={rangeLocked} /></label>
+      <label className="field"><span className="field-label">가중치</span><input type="number" step="any" min="0" value={v.weight} onChange={set('weight')} /></label>
+      <label className="field"><span className="field-label">순서</span><input type="number" step="1" value={v.sort_order} onChange={set('sort_order')} /></label>
+      {rangeLocked && <p className="note wide">이미 매긴 점수가 있어 점수 범위는 바꿀 수 없습니다.</p>}
+      <div className="actions wide">
+        <button className="btn small primary" type="submit" disabled={busy}>저장</button>
+        <button className="btn small ghost" type="button" onClick={onCancel}>취소</button>
+      </div>
+    </form>
   )
 }
 

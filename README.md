@@ -73,7 +73,7 @@ npm run smoke:team    # 실제 DB에서 내 팀·결과물 제출(파일 업로�
 
 ### DB 규칙 테스트
 
-참가 신청·관리자·내 팀·결과물·메일 규칙은 DB 함수(`supabase/migrations/0002~0006`)에 있고, 로컬 Postgres로 시험할 수 있다.
+참가 신청·관리자·내 팀·결과물·메일·심사 규칙은 DB 함수(`supabase/migrations/0002~0008`)에 있고, 로컬 Postgres로 시험할 수 있다.
 (Supabase처럼 `anon`·`authenticated`·`service_role` 역할과, `storage.buckets`·`storage.objects(bucket_id, name, metadata)` 표를 먼저 만들어 둔다. `service_role`은 Supabase처럼 RLS를 우회해야 한다: `create role service_role nologin bypassrls`. 없으면 권한 테스트가 실패한다)
 
 ```bash
@@ -82,6 +82,7 @@ psql -f supabase/tests/apply_test.sql   # 끝까지 가면 'ALL APPLY TESTS PASS
 psql -f supabase/tests/admin_test.sql   # 'ALL ADMIN TESTS PASSED' (새 DB에서)
 psql -f supabase/tests/team_test.sql    # 'ALL TEAM TESTS PASSED' (새 DB에서)
 psql -f supabase/tests/mail_test.sql    # 'ALL MAIL TESTS PASSED' (새 DB에서)
+psql -f supabase/tests/judging_test.sql # 'ALL JUDGING TESTS PASSED' (새 DB에서)
 psql -f supabase/tests/grants_test.sql  # 'ALL GRANT TESTS PASSED'
 ```
 

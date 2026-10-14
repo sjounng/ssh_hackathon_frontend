@@ -1,7 +1,13 @@
 import { REVIEW } from '../content.js'
+import { weightShares } from '../lib/scoring.js'
 import Ph from '../components/Ph.jsx'
 
-export default function Review() {
+// 평가 방식. 평가 항목은 관리자 > 심사에서 정한 값(page.jsx가 DB에서 읽어 넘긴다)
+export default function Review({ criteria = [] }) {
+  const shares = weightShares(criteria)
+  const ranges = [...new Set(criteria.map((c) => `${Number(c.min_score)}~${Number(c.max_score)}점`))]
+  const scale = !criteria.length ? '[점수 척도]' : ranges.length === 1 ? `항목마다 ${ranges[0]}입니다.` : '항목마다 배점이 다릅니다.'
+
   return (
     <section className="section" id="review" data-diamond="3">
       <div className="section-head">
@@ -13,7 +19,7 @@ export default function Review() {
         {REVIEW.principles.map((p) => (
           <div key={p.title}>
             <dt>{p.title}</dt>
-            <dd><Ph>{p.desc}</Ph></dd>
+            <dd><Ph>{p.desc.replace('{scale}', scale)}</Ph></dd>
           </div>
         ))}
       </dl>
@@ -21,15 +27,15 @@ export default function Review() {
       <div className="glass criteria">
         <div className="criteria-head">
           <h3>평가 항목</h3>
-          <span className="note">기획 확정 전</span>
+          {!criteria.length && <span className="note">기획 확정 전</span>}
         </div>
         <ul>
-          {REVIEW.criteria.map((c) => (
+          {criteria.length ? criteria.map((c, i) => (
             <li key={c.name}>
-              <span><Ph>{c.name}</Ph></span>
-              <span className="mono"><Ph>{c.weight}</Ph></span>
+              <span>{c.name}</span>
+              <span className="mono">{ranges.length > 1 ? `${Number(c.max_score)}점` : `${shares[i]}%`}</span>
             </li>
-          ))}
+          )) : <li><span><Ph>{REVIEW.criteriaPending}</Ph></span></li>}
         </ul>
       </div>
     </section>
