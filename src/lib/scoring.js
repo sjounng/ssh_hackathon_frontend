@@ -30,6 +30,16 @@ export function scoredTeamCount(judgeId, teamIds, criteria, scores) {
   return teamIds.filter((t) => criteria.every((c) => have.has(`${t}:${c.id}`))).length
 }
 
+// 순위대로 수상 채우기: titles[i]를 i+1위 팀에 (점수를 하나라도 받은 팀만).
+// 수상 범위 안이나 그 경계에 총점이 같은 팀이 있으면 { tie: true } — 운영진이 직접 정한다
+export function assignByRank(ranking, titles) {
+  const scored = ranking.filter((r) => r.judges > 0)
+  const n = Math.min(titles.length, scored.length)
+  for (let i = 0; i < n; i++) if (scored[i].rank !== i + 1) return { tie: true }
+  if (n > 0 && scored[n] && scored[n].rank === scored[n - 1].rank) return { tie: true }
+  return { tie: false, awards: titles.slice(0, n).map((title, i) => ({ title, rank: i + 1, teamId: scored[i].teamId })) }
+}
+
 // 평가 항목 비중 (가중치 합 대비 %)
 export function weightShares(criteria) {
   const sum = criteria.reduce((s, c) => s + Number(c.weight), 0)

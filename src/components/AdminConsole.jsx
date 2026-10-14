@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { APPLICATION_STATUS_LABEL, SCHOOL_SHORT, formatDateTime } from '../lib/labels.js'
 import { SCORING_RULE, rankTeams, scoredTeamCount, weightShares } from '../lib/scoring.js'
+import { PRIZES } from '../content.js'
 import DateTimeField from './ui/DateTimeField.jsx'
 import Select from './ui/Select.jsx'
 import Stepper from './ui/Stepper.jsx'
@@ -14,6 +15,7 @@ const TABS = [
   { id: 'teams', label: '팀 관리' },
   { id: 'mail', label: '메일' },
   { id: 'judging', label: '심사' },
+  { id: 'results', label: '결과' },
   { id: 'schedule', label: '일정' },
   { id: 'accounts', label: '계정' },
 ]
@@ -76,6 +78,7 @@ export default function AdminConsole({ initial, adminId }) {
       {tab === 'teams' && <Teams {...props} />}
       {tab === 'mail' && <Mail {...props} />}
       {tab === 'judging' && <Judging {...props} />}
+      {tab === 'results' && <Results {...props} />}
       {tab === 'schedule' && <Schedule {...props} />}
       {tab === 'accounts' && <Accounts {...props} />}
     </>
@@ -560,6 +563,110 @@ function CriterionForm({ initial, rangeLocked, busy, onSave, onCancel }) {
       {rangeLocked && <p className="note wide">이미 매긴 점수가 있어 점수 범위는 바꿀 수 없습니다.</p>}
       <div className="actions wide">
         <button className="btn small primary" type="submit" disabled={busy}>저장</button>
+        <button className="btn small ghost" type="button" onClick={onCancel}>취소</button>
+      </div>
+    </form>
+  )
+}
+
+// ───────────────────────── 결과 ─────────────────────────
+const AWARD_TITLES = PRIZES.awards.map((a) => a.title)
+
+function Results({ data, idx, act, busy }) {
+  const [dialog, confirm] = useConfirm()
+  const [editing, setEditing] = useState(null) // 수상 id 또는 'new'
+  const { config, awards, criteria, scores } = data
+  const submitted = data.submissions.filter((s) => s.submitted_at)
+  const ranking = rankTeams(submitted.map((s) => s.team_id), criteria, scores)
+  const projectOf = new Map(data.submissions.map((s) => [s.team_id, s.project_name]))
+  const label = (teamId) => `${projectOf.get(teamId) ?? '(결과물 없음)'} · ${idx.team.get(teamId)?.name || '팀명 미정'}`
+  const teamOptions = ranking.map((r) => [r.teamId, `${r.judges ? `${r.rank}위 ` : ''}${label(r.teamId)}${r.judges ? ` (${num(r.total)}점)` : ' (점수 없음)'}`])
+  const published = Boolean(config.results_published_at)
+
+  const togglePublish = async () => {
+    const msg = published
+      ? '결과 공개를 취소할까요? /results와 프로젝트 페이지가 다시 비공개가 됩니다.'
+      : awards.length
+        ? '결과를 공개할까요? /results에 수상 팀이 보이고, 모든 팀의 프로젝트 페이지가 누구에게나 열립니다.'
+        : '아직 정한 수상 팀이 없습니다. 그래도 공개할까요? 모든 팀의 프로젝트 페이지가 누구에게나 열립니다.'
+    if (await confirm(msg, { ok: published ? '공개 취소' : '공개하기', danger: published })) act('publish_results', { publish: !published })
+  }
+  const save = async (award) => {
+    if (await act('save_award', { award })) setEditing(null)
+  }
+  const remove = async (a) => {
+    if (await confirm(`'${a.title}' 수상을 지울까요?`, { ok: '지우기', danger: true })) act('delete_award', { id: a.id })
+  }
+
+  return (
+    <section className="admin-section">
+      {dialog}
+      <div className="glass">
+        <div className="track-head">
+          <h3>결과 공개</h3>
+          <span className={`status ${published ? 's-approved' : ''}`}>{published ? `공개 중 · ${formatDateTime(config.results_published_at)}` : '비공개'}</span>
+        </div>
+        <p className="muted">
+          {published
+            ? '지금 /results의 수상 팀과 모든 팀의 프로젝트 페이지가 누구에게나 보입니다.'
+            : `공개하면 /results에 수상 팀이, 프로젝트 페이지에 모든 팀의 결과물과 팀원 이름이 누구에게나 보입니다.${config.results_announce_at ? ` 발표 예정 ${formatDateTime(config.results_announce_at)}.` : ''}`}
+        </p>
+        <div className="actions">
+          <button className={`btn ${published ? 'ghost' : 'primary'}`} disabled={busy} onClick={togglePublish}>{published ? '공개 취소' : '결과 공개'}</button>
+          <a className="btn ghost" href="/results" target="_blank" rel="noreferrer">결과 페이지 보기</a>
+        </div>
+      </div>
+
+      <div className="glass">
+        <div className="track-head">
+          <h3>수상 팀</h3>
+          <span className="track-size">{published ? '고치면 공개 페이지에 바로 반영됩니다' : '공개 전까지 운영진만 봅니다'} · 순서대로 보입니다</span>
+        </div>
+        {awards.length === 0 && editing !== 'new' && <p className="note">아직 정한 수상 팀이 없습니다. 심사 순위는 심사 탭에서 볼 수 있습니다.</p>}
+        <ul className="member-list">
+          {awards.map((a) => (editing === a.id ? (
+            <li key={a.id}><AwardForm initial={a} teamOptions={teamOptions} busy={busy} onSave={save} onCancel={() => setEditing(null)} /></li>
+          ) : (
+            <li key={a.id}>
+              <span><strong>{a.title}</strong> <span className="note">{label(a.team_id)}</span></span>
+              <span className="actions">
+                <button className="btn small ghost" disabled={busy} onClick={() => setEditing(a.id)}>수정</button>
+                <button className="btn small ghost" disabled={busy} onClick={() => remove(a)}>삭제</button>
+              </span>
+            </li>
+          )))}
+        </ul>
+        {editing === 'new' ? (
+          <AwardForm initial={{ title: '', rank: awards.length + 1, team_id: '' }} teamOptions={teamOptions} busy={busy} onSave={save} onCancel={() => setEditing(null)} />
+        ) : (
+          <div className="actions">
+            <button className="btn small primary" disabled={busy || !submitted.length} onClick={() => setEditing('new')}>수상 추가</button>
+            {awards.length === 0 && (
+              <button className="btn small ghost" disabled={busy || !ranking.some((r) => r.judges)} onClick={() => act('fill_awards')}>
+                심사 순위대로 채우기 ({AWARD_TITLES.join(' · ')})
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function AwardForm({ initial, teamOptions, busy, onSave, onCancel }) {
+  const [v, setV] = useState(() => ({ id: initial.id, title: initial.title, rank: initial.rank ?? '', team_id: initial.team_id }))
+  const set = (k) => (e) => setV((s) => ({ ...s, [k]: e.target.value }))
+  return (
+    <form className="criterion-form" onSubmit={(e) => { e.preventDefault(); onSave(v) }}>
+      <label className="field"><span className="field-label">수상명</span><input type="text" list="award-titles" value={v.title} onChange={set('title')} maxLength={40} required /></label>
+      <datalist id="award-titles">{AWARD_TITLES.map((t) => <option key={t} value={t} />)}</datalist>
+      <label className="field"><span className="field-label">보이는 순서</span><input type="number" min="1" step="1" value={v.rank} onChange={set('rank')} /></label>
+      <div className="field wide">
+        <span className="field-label">팀 (심사 순위순)</span>
+        <Select value={v.team_id} onChange={(x) => setV((s) => ({ ...s, team_id: x }))} ariaLabel="수상 팀" options={[['', '팀 고르기'], ...teamOptions]} />
+      </div>
+      <div className="actions wide">
+        <button className="btn small primary" type="submit" disabled={busy || !v.title.trim() || !v.team_id}>저장</button>
         <button className="btn small ghost" type="button" onClick={onCancel}>취소</button>
       </div>
     </form>

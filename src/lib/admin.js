@@ -4,6 +4,8 @@ import { db } from './supabase.js'
 import { getUserById } from './users.js'
 import { mailSummary } from './mail.js'
 import { cleanTeamFiles } from './team.js'
+import { assignByRank, rankTeams } from './scoring.js'
+import { PRIZES } from '../content.js'
 
 // 관리자 (기획서 기능 9). 여러 행을 함께 바꾸는 작업은 DB 함수(0003_admin.sql), 단순 조회·수정은 여기서 한다
 
@@ -31,6 +33,10 @@ export const ADMIN_ERRORS = {
   INVALID_INPUT: '입력값을 확인해 주세요.',
   SELF_ROLE: '자기 자신의 운영진 권한은 해제할 수 없습니다.',
   CRITERION_IN_USE: '이미 매긴 점수가 있는 항목은 점수 범위를 바꿀 수 없습니다. 항목을 새로 만들거나 점수를 지운 뒤 바꿔 주세요.',
+  NOT_SUBMITTED_TEAM: '최종 제출한 팀만 수상 팀으로 정할 수 있습니다.',
+  AWARDS_EXIST: '이미 정한 수상 팀이 있습니다. 순위대로 채우기는 수상 팀이 비어 있을 때만 쓸 수 있습니다.',
+  RANK_TIE: '수상 범위 안에 총점이 같은 팀이 있어 자동으로 채울 수 없습니다. 직접 정해 주세요.',
+  NO_SCORES: '아직 점수를 받은 팀이 없습니다.',
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -69,13 +75,14 @@ export async function getAdminData() {
     db().from('users').select('id, email, name, school, role, student_id, phone, created_at').order('created_at').then(must),
     db().from('invited_emails').select('email, role, note, created_at').order('created_at').then(must),
   ])
-  // 심사: 평가 항목, 점수, 결과물 (관리자 > 심사)
-  const [criteria, scores, submissions] = await Promise.all([
+  // 심사·결과: 평가 항목, 점수, 결과물, 수상 (관리자 > 심사 · 결과)
+  const [criteria, scores, submissions, awards] = await Promise.all([
     db().from('criteria').select('id, name, description, min_score, max_score, weight, sort_order').order('sort_order').order('created_at').then(must),
     db().from('scores').select('judge_id, team_id, criterion_id, score, voided_at').then(must),
     db().from('submissions').select('team_id, project_name, submitted_at').then(must),
+    db().from('awards').select('id, team_id, title, rank, created_at').order('rank', { nullsFirst: false }).order('created_at').then(must),
   ])
-  const data = { config, applications: apps, teams, members, users, invites, criteria, scores, submissions }
+  const data = { config, applications: apps, teams, members, users, invites, criteria, scores, submissions, awards }
   return { ...data, mail: await mailSummary(data) }
 }
 
@@ -158,6 +165,47 @@ export async function deleteCriterion(id, force) {
 export async function voidScores(judgeId, teamId, voided) {
   if (!isUuid(judgeId) || !isUuid(teamId)) throw new AdminError('INVALID_INPUT')
   must(await db().from('scores').update({ voided_at: voided ? new Date().toISOString() : null }).eq('judge_id', judgeId).eq('team_id', teamId))
+}
+
+// ── 결과 발표: 수상 팀과 공개 ──
+export async function saveAward(input) {
+  const title = String(input?.title ?? '').trim()
+  const rank = input?.rank === '' || input?.rank == null ? null : Number(input.rank)
+  if (!title || title.length > 40 || (rank !== null && !(Number.isInteger(rank) && rank >= 1 && rank <= 100))
+      || !isUuid(input?.team_id) || (input.id && !isUuid(input.id))) {
+    throw new AdminError('INVALID_INPUT')
+  }
+  const sub = must(await db().from('submissions').select('submitted_at').eq('team_id', input.team_id).maybeSingle())
+  if (!sub?.submitted_at) throw new AdminError('NOT_SUBMITTED_TEAM')
+  const row = { title, rank, team_id: input.team_id }
+  if (input.id) must(await db().from('awards').update(row).eq('id', input.id))
+  else must(await db().from('awards').insert(row))
+}
+
+export async function deleteAward(id) {
+  if (!isUuid(id)) throw new AdminError('INVALID_INPUT')
+  must(await db().from('awards').delete().eq('id', id))
+}
+
+// 심사 순위대로 첫 화면 시상(content.js PRIZES)의 상을 1위부터 채운다. 수상 팀이 비어 있을 때만
+export async function fillAwards() {
+  const { count, error } = await db().from('awards').select('*', { count: 'exact', head: true })
+  if (error) throw error
+  if (count) throw new AdminError('AWARDS_EXIST')
+  const [criteria, scores, subs] = await Promise.all([
+    db().from('criteria').select('id, weight, max_score').then(must),
+    db().from('scores').select('judge_id, team_id, criterion_id, score, voided_at').then(must),
+    db().from('submissions').select('team_id').not('submitted_at', 'is', null).then(must),
+  ])
+  const r = assignByRank(rankTeams(subs.map((s) => s.team_id), criteria, scores), PRIZES.awards.map((a) => a.title))
+  if (r.tie) throw new AdminError('RANK_TIE')
+  if (!r.awards.length) throw new AdminError('NO_SCORES')
+  must(await db().from('awards').insert(r.awards.map((a) => ({ title: a.title, rank: a.rank, team_id: a.teamId }))))
+}
+
+// 결과 공개 / 공개 취소. 공개하면 /results에 수상 팀이, /projects에 모든 팀의 프로젝트가 누구에게나 보인다
+export async function publishResults(publish) {
+  must(await db().from('event_config').update({ results_published_at: publish ? new Date().toISOString() : null }).eq('id', true))
 }
 
 // ── 계정 ──

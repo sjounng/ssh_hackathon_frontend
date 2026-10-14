@@ -54,14 +54,10 @@ export const PROJECTS = {
   desc: '2027 서성한 연합 해커톤에서 팀들이 하루 동안 만든 프로젝트입니다.',
 }
 
-// 기능 페이지 소개 (아직 기능이 구현되지 않은 페이지에 "준비 중"과 함께 표시)
-export const PAGES = {
-  results: {
-    code: 'RESULTS',
-    title: '결과 발표',
-    desc: '운영진 확인을 거쳐 순위와 수상 팀을 공개합니다.',
-    items: ['[심사 점수로 순위 산출 — 방식 확정 후 기입]', '수상 팀과 프로젝트 페이지 연결'],
-  },
+// 결과 발표 (/results). 운영진이 관리자 > 결과에서 공개하면 수상 팀이 보이고, 프로젝트 갤러리도 함께 열린다
+export const RESULTS = {
+  title: '결과 발표',
+  desc: '2027 서성한 연합 해커톤 수상 팀입니다. 모든 팀의 프로젝트는 프로젝트 페이지에서 볼 수 있습니다.',
 }
 
 export const ABOUT = {
@@ -77,11 +73,12 @@ export const ABOUT = {
   },
 }
 
+// 시상. title은 관리자 > 결과의 '순위대로 채우기'에서 수상명으로도 쓴다 (위에서부터 1위, 2위…)
 export const PRIZES = {
   awards: [
-    { rank: '대상 · 1팀', amount: '[금액]', highlight: true },
-    { rank: '최우수상 · 1팀', amount: '[금액]' },
-    { rank: '우수상 · 1팀', amount: '[금액]' },
+    { title: '대상', count: '1팀', amount: '[금액]', highlight: true },
+    { title: '최우수상', count: '1팀', amount: '[금액]' },
+    { title: '우수상', count: '1팀', amount: '[금액]' },
   ],
   note: '수상 팀에는 상금과 부상을 드립니다. 후원사 특별상은 후원사가 정해지면 공개합니다.',
   benefits: [

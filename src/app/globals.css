@@ -447,6 +447,24 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
   .admin-row-main.ranking-row { grid-template-columns: auto 1fr auto; }
 }
 
+/* ---------- 결과 발표 ---------- */
+.results-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
+.results-list li.first { grid-column: 1 / -1; }
+.glass.result-card { display: flex; flex-direction: column; height: 100%; padding: 0; transition: transform 0.2s; }
+.glass.result-card:hover { transform: translateY(-2px); }
+.results-list li.first .result-card { display: grid; grid-template-columns: 1.3fr 1fr; }
+.results-list li.first .project-cover { aspect-ratio: auto; min-height: 280px; }
+.result-body { display: grid; align-content: start; gap: 8px; padding: 22px 24px 26px; }
+.result-title { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.results-list li.first .result-title { font-size: clamp(30px, 3.4vw, 44px); }
+.results-list li.first .result-body { align-content: center; padding: 32px; }
+.result-body h3 { font-size: 19px; font-weight: 600; line-height: 1.35; }
+.results-actions { margin-top: 36px; }
+@media (max-width: 860px) {
+  .results-list li.first .result-card { grid-template-columns: 1fr; }
+  .results-list li.first .project-cover { min-height: 0; aspect-ratio: 16 / 9; }
+}
+
 /* ---------- 프로젝트 갤러리 ---------- */
 .page-inner.gallery { max-width: 1120px; }
 .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }

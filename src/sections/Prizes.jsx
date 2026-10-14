@@ -10,8 +10,8 @@ export default function Prizes() {
 
       <div className="awards">
         {PRIZES.awards.map((a) => (
-          <article className={`glass award ${a.highlight ? 'highlight' : ''}`} key={a.rank}>
-            <p className="award-rank">{a.rank}</p>
+          <article className={`glass award ${a.highlight ? 'highlight' : ''}`} key={a.title}>
+            <p className="award-rank">{a.title} · {a.count}</p>
             <p className="award-amount"><Ph>{a.amount}</Ph></p>
           </article>
         ))}
