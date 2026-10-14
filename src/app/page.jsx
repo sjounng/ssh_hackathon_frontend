@@ -6,13 +6,13 @@ import Review from '../sections/Review.jsx'
 import Schedule from '../sections/Schedule.jsx'
 import Cta from '../sections/Cta.jsx'
 import PageIndicator from '../components/PageIndicator.jsx'
-import { getPublicSchedule } from '../lib/event.js'
+import { getPublicCriteria, getPublicSchedule } from '../lib/event.js'
 
-// 메인 랜딩 페이지 (기획서 기능 1). 문구는 content.js, 일정·팀 인원은 관리자 페이지 > 일정(DB)에서 관리한다.
+// 메인 랜딩 페이지 (기획서 기능 1). 문구는 content.js, 일정·팀 인원·평가 항목은 관리자 페이지(DB)에서 관리한다.
 // 각 섹션은 data-diamond로 짝지은 유성(다이아몬드)의 관측 기록이며,
 // 섹션이 화면 가운데에 오면 배경 카메라가 그 유성을 관측 거리로 비추고 HUD가 붙는다.
 export default async function Home() {
-  const schedule = await getPublicSchedule()
+  const [schedule, criteria] = await Promise.all([getPublicSchedule(), getPublicCriteria()])
   return (
     <>
       <PageIndicator />
@@ -21,7 +21,7 @@ export default async function Home() {
         <About />
         <Prizes />
         <Eligibility schedule={schedule} />
-        <Review />
+        <Review criteria={criteria} />
         <Schedule schedule={schedule} />
       </main>
       <Cta schedule={schedule} />

@@ -219,8 +219,8 @@ mark.ph { background: none; color: inherit; }
 .field-label { font-size: 14px; color: var(--ink-soft); }
 .field-static { font-size: 15px; }
 /* 입력칸: 버튼과 같은 리퀴드 글래스. input에는 ::after를 못 붙이므로 반사선은 안쪽 그림자(--lg-edge)를 조금 진하게 써서 낸다 */
-.field input[type='text'], .field input[type='tel'], .field input[type='email'], .field textarea,
-.admin-section input[type='email'], .admin-section input[type='text'] {
+.field input[type='text'], .field input[type='tel'], .field input[type='email'], .field input[type='number'], .field textarea,
+.admin-section input[type='email'], .admin-section input[type='text'], .admin-section input[type='number'] {
   width: 100%; padding: 13px 16px; border-radius: 16px; font: inherit; font-size: 15px; color: #fff;
   border: 0; background: var(--lg-fill);
   box-shadow: var(--lg-field-edge);
@@ -234,6 +234,8 @@ mark.ph { background: none; color: inherit; }
   box-shadow: var(--lg-field-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 .field textarea { -webkit-backdrop-filter: blur(3px) saturate(1.6); backdrop-filter: url(#lg-card) saturate(1.6); }
+.field input:disabled, .admin-section input:disabled { opacity: 0.5; cursor: not-allowed; }
+.review-form input[type='number'] { max-width: 160px; }
 .check { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.5; cursor: pointer; }
 .field-error, .form-error { font-size: 13px; color: #ff9a8f; }
 .form-error { margin: 0; font-size: 14px; }
@@ -379,7 +381,7 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 .admin-tabs button:hover { color: #fff; --btn-fill: rgba(255, 255, 255, 0.04); }
 .admin-tabs button.active { color: #fff; --btn-fill: rgba(255, 255, 255, 0.09); box-shadow: var(--lg-edge), var(--lg-drop); }
 .admin-section { display: grid; gap: 16px; }
-.admin-section input[type='email'], .admin-section input[type='text'] { padding: 10px 14px; border-radius: 999px; font-size: 14px; }
+.admin-section input[type='email'], .admin-section input[type='text'], .admin-section input[type='number'] { padding: 10px 14px; border-radius: 999px; font-size: 14px; }
 .admin-toolbar, .admin-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .admin-filters { justify-content: flex-start; }
 .admin-list { padding: 8px 20px; }
@@ -420,6 +422,29 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
   .admin-assign, .schedule-grid, .invite-form { grid-template-columns: 1fr; }
   .admin-row-main { grid-template-columns: auto 1fr auto; }
   .admin-row-sub { display: none; }
+}
+
+/* ---------- 심사 ---------- */
+.review-list { margin-top: 32px; }
+.review-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; width: 100%; padding: 14px 0; text-align: left; }
+.review-row-title { display: grid; gap: 2px; font-size: 15px; }
+.review-links { margin: 20px 0 8px; }
+.review-form { display: grid; gap: 22px; }
+.score-scale { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.score-scale button {
+  min-width: 44px; height: 44px; padding: 0 12px; border-radius: 999px; font-size: 15px; color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.03); box-shadow: var(--lg-edge); transition: background 0.15s, color 0.15s;
+}
+.score-scale button:hover:not(:disabled) { color: #fff; background: rgba(255, 255, 255, 0.07); }
+.score-scale button.active { color: #050608; background: var(--ink); font-weight: 600; }
+.score-scale button:disabled { opacity: 0.5; cursor: default; }
+.ranking-head { padding-top: 14px; }
+.admin-row-main.ranking-row { grid-template-columns: auto minmax(160px, 1.4fr) 1fr auto; }
+.criterion-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 12px; width: 100%; padding: 6px 0 4px; }
+.criterion-form .wide { grid-column: 1 / -1; }
+@media (max-width: 860px) {
+  .criterion-form { grid-template-columns: 1fr 1fr; }
+  .admin-row-main.ranking-row { grid-template-columns: auto 1fr auto; }
 }
 
 /* ---------- 프로젝트 갤러리 ---------- */

@@ -9,11 +9,5 @@ export const APPLICATION_STATUS_LABEL = {
   rejected: '거절',
 }
 
-// 2026.11.15 (일) 12:00 — 브라우저 현지 시각
-const WEEK = ['일', '월', '화', '수', '목', '금', '토']
-export function formatDateTime(iso) {
-  if (!iso) return null
-  const d = new Date(iso)
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} (${WEEK[d.getDay()]}) ${p(d.getHours())}:${p(d.getMinutes())}`
-}
+// 2026.11.15 (일) 12:00 — 행사 기준인 한국 시각. 서버(UTC)에서 먼저 그려도 브라우저와 같은 값이 나오게 한다
+export { formatKstDateTime as formatDateTime } from './schedule.js'
