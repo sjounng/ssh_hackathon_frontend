@@ -106,7 +106,7 @@ function Editor({ s, api }) {
 
       <label className="check">
         <input type="checkbox" checked={v.pledge} onChange={(e) => setV((x) => ({ ...x, pledge: e.target.checked }))} />
-        <span>제출한 결과물은 우리 팀이 이번 해커톤 기간에 만든 것이며, 프로젝트명·소개·대표 이미지를 행사 홍보에 쓰는 데 동의합니다.</span>
+        <span>제출한 결과물은 우리 팀이 이번 해커톤 기간에 만든 것입니다. 결과 발표 뒤 결과물과 팀원 이름이 프로젝트 페이지에 공개되고, 프로젝트명·소개·대표 이미지를 행사 홍보에 쓰는 데 동의합니다.</span>
       </label>
 
       {error && <p className="form-error" role="alert">{error}</p>}
