@@ -2,8 +2,9 @@ import { EVENT, HOSTS } from '../content.js'
 import { formatEventRange, formatMonthDayWeek } from '../lib/schedule.js'
 import ApplyButton from '../components/ApplyButton.jsx'
 import Ph from '../components/Ph.jsx'
+import { LogoFull } from '../components/Logo.jsx'
 
-// 첫 화면 (포스터 구성): 재단선·가로선 틀 안에 주최 → 행사명 → 부제 → ◆ 일정 · 장소 · 신청 기간 · 모집.
+// 첫 화면 (포스터 구성): 재단선·가로선 틀 안에 주최 → 로고(마크·행사명·부제) → ◆ 일정 · 장소 · 신청 기간 · 모집.
 // schedule: 관리자 일정 (page.jsx가 DB에서 읽어 넘긴다)
 export default function Hero({ schedule: s }) {
   const plan = [
@@ -18,10 +19,9 @@ export default function Hero({ schedule: s }) {
       <div className="frame">
         <i className="crop tl" /><i className="crop tr" /><i className="crop bl" /><i className="crop br" />
         <p className="hero-kicker">{HOSTS.map((h) => `${h.name} ${h.club}`).join(' × ')}</p>
-        <div className="hero-title">
-          <h1>{EVENT.name.split(' ').map((w) => <span key={w}>{w}</span>)}</h1>
-          <p className="hero-sub">{EVENT.subtitle}</p>
-        </div>
+        <h1 className="hero-title">
+          <LogoFull className="hero-logo" label={`${EVENT.name} ${EVENT.subtitle}`} />
+        </h1>
 
         <dl className="hero-info">
           <div>
