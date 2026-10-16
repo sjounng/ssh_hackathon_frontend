@@ -1,22 +1,23 @@
-// 랜딩 페이지의 모든 문구. 기준: 「2027 서성한 연합 해커톤 행사 기획서」(2026-10-13판)
+// 랜딩 페이지의 모든 문구. 기준: 「2027 서성한 연합 해커톤 행사 기획서」(2026-10-13판), 이름·표기는 홍보 포스터(SSH HACKATHON)
 // 문구는 이 파일만 고치면 된다. 대괄호([ ])로 감싼 값은 아직 정해지지 않은 자리표시이며,
 // 화면에도 대괄호째 보이므로 교체할 곳을 쉽게 찾을 수 있다.
 // 일정(날짜)과 팀 인원은 여기 두지 않는다: 관리자 페이지 > 일정(DB)에 넣으면 첫 화면의 일시·신청 버튼·
 // 행사 일정·참가 자격에 그대로 보인다. 비어 있는 날짜는 '[미정]'으로 보인다.
 
 export const EVENT = {
-  name: '2027 서성한 연합 해커톤',
-  eyebrow: 'FORIF × CoMit × INSIGHT',
+  name: 'SSH HACKATHON',
+  subtitle: '서강대 × 성균관대 × 한양대 연합 해커톤',
   summary: '세 학교 학생들이 팀을 이루어 하루 동안 서비스를 기획하고 MVP(최소 기능 제품)를 개발한 뒤, 결과물을 발표하고 심사를 받는 연합 해커톤입니다.',
-  venue: '한양대학교 IT/BT관 508호',
-  capacity: '100명 내외 · 13시간',
+  venue: ['한양대학교', 'IT/BT관 508호'], // 첫 화면에 줄을 나눠 보인다
+  capacity: '100명 내외',
+  fee: '참가비 20,000원',
 }
 
-// 주최 학교와 동아리. 로그인 허용 도메인의 실제 기준은 DB의 allowed_domains 테이블이다 (여기 domain은 표시용)
+// 주최 학교와 동아리 (포스터 순서: 서강 · 성균관 · 한양). 로그인 허용 도메인의 실제 기준은 DB의 allowed_domains 테이블이다 (여기 domain은 표시용)
 export const HOSTS = [
-  { key: 'hy', name: '한양대학교', short: '한양대', club: 'FORIF', domain: '@hanyang.ac.kr' },
-  { key: 'sk', name: '성균관대학교', short: '성균관대', club: 'CoMit', domain: '@g.skku.edu' },
   { key: 'sg', name: '서강대학교', short: '서강대', club: 'INSIGHT', domain: '@u.sogang.ac.kr' },
+  { key: 'sk', name: '성균관대학교', short: '성균관대', club: 'CoMiT', domain: '@g.skku.edu' },
+  { key: 'hy', name: '한양대학교', short: '한양대', club: 'FORIF', domain: '@hanyang.ac.kr' },
 ]
 
 // 신청 버튼이 여는 주소. 버튼은 관리자 일정의 신청 시작~마감 사이에만 활성화된다
@@ -51,23 +52,19 @@ export const LANDING_PAGES = [
 // 프로젝트 갤러리 (/projects). 결과 공개 전에는 심사위원(심사 시작 뒤)·운영진·자기 팀만 본다
 export const PROJECTS = {
   title: '프로젝트',
-  desc: '2027 서성한 연합 해커톤에서 팀들이 하루 동안 만든 프로젝트입니다.',
+  desc: 'SSH HACKATHON에서 팀들이 하루 동안 만든 프로젝트입니다.',
 }
 
-// 기능 페이지 소개 (아직 기능이 구현되지 않은 페이지에 "준비 중"과 함께 표시)
-export const PAGES = {
-  results: {
-    code: 'RESULTS',
-    title: '결과 발표',
-    desc: '운영진 확인을 거쳐 순위와 수상 팀을 공개합니다.',
-    items: ['[심사 점수로 순위 산출 — 방식 확정 후 기입]', '수상 팀과 프로젝트 페이지 연결'],
-  },
+// 결과 발표 (/results). 운영진이 관리자 > 결과에서 공개하면 수상 팀이 보이고, 프로젝트 갤러리도 함께 열린다
+export const RESULTS = {
+  title: '결과 발표',
+  desc: 'SSH HACKATHON 수상 팀입니다. 모든 팀의 프로젝트는 프로젝트 페이지에서 볼 수 있습니다.',
 }
 
 export const ABOUT = {
   title: '서성한이 함께 만드는 하루',
   body: [
-    '‘서성한’으로 함께 불리는 서강대·성균관대·한양대의 학생들이 한자리에 모여 아이디어와 기술을 나눕니다. 세 학교의 프로그래밍 동아리 FORIF, CoMit, INSIGHT가 함께 주최합니다.',
+    '‘서성한’으로 함께 불리는 서강대·성균관대·한양대의 학생들이 한자리에 모여 아이디어와 기술을 나눕니다. 세 학교의 동아리 INSIGHT, CoMiT, FORIF가 함께 주최합니다.',
     '팀을 이루어 아이디어 기획부터 설계, 개발, 발표까지 프로젝트의 전 과정을 직접 이끌어 봅니다. 하루 동안 완성한 결과물과 개발 과정은 포트폴리오로 남고, 다른 학교 참가자들과의 교류는 행사 뒤에도 이어집니다.',
   ],
   topic: {
@@ -77,11 +74,12 @@ export const ABOUT = {
   },
 }
 
+// 시상. title은 관리자 > 결과의 '순위대로 채우기'에서 수상명으로도 쓴다 (위에서부터 1위, 2위…)
 export const PRIZES = {
   awards: [
-    { rank: '대상 · 1팀', amount: '[금액]', highlight: true },
-    { rank: '최우수상 · 1팀', amount: '[금액]' },
-    { rank: '우수상 · 1팀', amount: '[금액]' },
+    { title: '대상', count: '1팀', amount: '[금액]', highlight: true },
+    { title: '최우수상', count: '1팀', amount: '[금액]' },
+    { title: '우수상', count: '1팀', amount: '[금액]' },
   ],
   note: '수상 팀에는 상금과 부상을 드립니다. 후원사 특별상은 후원사가 정해지면 공개합니다.',
   benefits: [
@@ -92,7 +90,7 @@ export const PRIZES = {
 }
 
 export const ELIGIBILITY = {
-  intro: '한양대·성균관대·서강대 재학생과 휴학생이라면 전공·학년과 관계없이 신청할 수 있습니다. 학교 Google 계정으로 로그인해 신청합니다.',
+  intro: '서강대·성균관대·한양대 재학생과 휴학생이라면 전공·학년과 관계없이 신청할 수 있습니다. 학교 Google 계정으로 로그인해 신청합니다.',
   tracks: [
     {
       key: 'team',
@@ -179,13 +177,13 @@ export const FOOTER = {
     { label: '[인스타그램 계정]', href: '#' },
   ],
   privacyHref: '/privacy',
-  copyright: '© 2026 FORIF · CoMit · INSIGHT',
+  copyright: '© 2026 INSIGHT · CoMiT · FORIF',
 }
 
 // 개인정보 처리방침 (/privacy). 프로필 입력 화면의 동의 체크박스와 푸터가 이 페이지를 연결한다.
 // 초안이므로 대괄호 값을 채우고, 운영 전에 주최 측(학교 담당 부서 등)의 검토를 받는다
 export const PRIVACY = {
-  intro: '2027 서성한 연합 해커톤 운영진(한양대학교 FORIF · 성균관대학교 CoMit · 서강대학교 INSIGHT)은 행사 운영에 필요한 최소한의 개인정보만 수집하며, 아래 목적 외에는 쓰지 않습니다.',
+  intro: 'SSH HACKATHON(서강대 × 성균관대 × 한양대 연합 해커톤) 운영진(서강대학교 INSIGHT · 성균관대학교 CoMiT · 한양대학교 FORIF)은 행사 운영에 필요한 최소한의 개인정보만 수집하며, 아래 목적 외에는 쓰지 않습니다.',
   // 동의를 받을 때 반드시 알려야 하는 네 가지 (개인정보 보호법 제15조 제2항)
   consent: [
     {

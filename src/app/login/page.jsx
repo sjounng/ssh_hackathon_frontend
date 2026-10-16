@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { currentUser, signIn } from '../../auth.js'
 
-export const metadata = { title: '로그인 · 연합 해커톤' }
+export const metadata = { title: '로그인' }
 
 const ERRORS = {
   domain: '주최 학교 Google 계정(또는 초청받은 계정)으로만 로그인할 수 있습니다.',

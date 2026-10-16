@@ -4,7 +4,7 @@ import { currentUser } from '../../auth.js'
 import { getAdminData, requireAdmin } from '../../lib/admin.js'
 import AdminConsole from '../../components/AdminConsole.jsx'
 
-export const metadata = { title: '관리자 · 연합 해커톤' }
+export const metadata = { title: '관리자' }
 
 // 관리자 (기획서 기능 9). 운영진 여부는 DB의 현재 역할로 확인한다
 export default async function AdminPage() {

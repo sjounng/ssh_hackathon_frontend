@@ -6,15 +6,16 @@ import Review from '../sections/Review.jsx'
 import Schedule from '../sections/Schedule.jsx'
 import Cta from '../sections/Cta.jsx'
 import PageIndicator from '../components/PageIndicator.jsx'
+import Sphere from '../components/Sphere.jsx'
 import { getPublicCriteria, getPublicSchedule } from '../lib/event.js'
 
 // 메인 랜딩 페이지 (기획서 기능 1). 문구는 content.js, 일정·팀 인원·평가 항목은 관리자 페이지(DB)에서 관리한다.
-// 각 섹션은 data-diamond로 짝지은 유성(다이아몬드)의 관측 기록이며,
-// 섹션이 화면 가운데에 오면 배경 카메라가 그 유성을 관측 거리로 비추고 HUD가 붙는다.
+// 배경의 점선 구체(Sphere)는 메인 페이지에만 있고, 다른 페이지는 같은 자리에 정적인 점선 원(Backdrop)이 보인다
 export default async function Home() {
   const [schedule, criteria] = await Promise.all([getPublicSchedule(), getPublicCriteria()])
   return (
     <>
+      <Sphere />
       <PageIndicator />
       <main>
         <Hero schedule={schedule} />

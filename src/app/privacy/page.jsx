@@ -1,7 +1,7 @@
 import { PRIVACY } from '../../content.js'
 import Ph from '../../components/Ph.jsx'
 
-export const metadata = { title: '개인정보 처리방침 · 연합 해커톤' }
+export const metadata = { title: '개인정보 처리방침' }
 
 // 개인정보 처리방침 (기획서 기능 0). 문구는 content.js의 PRIVACY에서 관리한다
 export default function PrivacyPage() {

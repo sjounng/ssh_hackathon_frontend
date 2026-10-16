@@ -4,7 +4,7 @@ import { currentUser } from '../../auth.js'
 import { getApplyState } from '../../lib/apply.js'
 import ApplyFlow from '../../components/ApplyFlow.jsx'
 
-export const metadata = { title: '참가 신청 · 연합 해커톤' }
+export const metadata = { title: '참가 신청' }
 
 // 참가 신청 (기획서 기능 3): 로그인·프로필 확인 후 신청 화면
 export default async function ApplyPage() {

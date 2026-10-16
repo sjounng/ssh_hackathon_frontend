@@ -3,7 +3,7 @@ import { currentUser } from '../../../auth.js'
 import { SCHOOL_LABEL, getUserById } from '../../../lib/users.js'
 import ProfileForm from '../../../components/ProfileForm.jsx'
 
-export const metadata = { title: '정보 입력 · 연합 해커톤' }
+export const metadata = { title: '정보 입력' }
 
 // 최초 로그인 시 필수 정보 입력, 이후에는 정보 수정
 export default async function ProfilePage() {

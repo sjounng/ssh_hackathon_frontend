@@ -5,7 +5,7 @@ import { getGallery } from '../../lib/projects.js'
 import { formatKstDateTime } from '../../lib/schedule.js'
 import { ProjectGrid } from '../../components/ProjectGallery.jsx'
 
-export const metadata = { title: '프로젝트 · 연합 해커톤' }
+export const metadata = { title: '프로젝트' }
 
 // 프로젝트 갤러리 (기획서 기능 6). 보는 범위는 lib/projects.js의 galleryScope
 export default async function ProjectsPage() {

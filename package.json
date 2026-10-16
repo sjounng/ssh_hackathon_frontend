@@ -14,17 +14,12 @@
     "mail:test": "node --conditions=react-server --env-file=.env.local scripts/mail-test.mjs"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.9",
-    "@react-three/fiber": "^9.8.1",
-    "@react-three/postprocessing": "^3.1.3",
     "@supabase/supabase-js": "^2.117.3",
     "next": "^16.3.6",
     "next-auth": "^5.0.0-beta.32",
-    "postprocessing": "^6.39.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "server-only": "^0.0.1",
-    "three": "^0.186.1"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

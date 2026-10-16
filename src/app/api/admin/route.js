@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
-  AdminError, addInvite, addMember, createTeam, decide, deleteCriterion, getAdminData, removeInvite, removeMember,
-  requireAdmin, saveConfig, saveCriterion, setLeader, setPresentationOrder, setRole, voidScores,
+  AdminError, addInvite, addMember, createTeam, decide, deleteAward, deleteCriterion, fillAwards, getAdminData, publishResults,
+  removeInvite, removeMember, requireAdmin, saveAward, saveConfig, saveCriterion, setLeader, setPresentationOrder, setRole, voidScores,
 } from '../../../lib/admin.js'
 import { MailError, sendMail, sendTestMail } from '../../../lib/mail.js'
 
@@ -23,6 +23,10 @@ const ACTIONS = {
   save_criterion: (a, b) => saveCriterion(b.criterion),
   delete_criterion: (a, b) => deleteCriterion(b.id, b.force),
   void_scores: (a, b) => voidScores(b.judgeId, b.teamId, b.voided === true),
+  save_award: (a, b) => saveAward(b.award),
+  delete_award: (a, b) => deleteAward(b.id),
+  fill_awards: () => fillAwards(),
+  publish_results: (a, b) => publishResults(b.publish === true),
   // 메일: 결과({ sent, failed } 등)를 화면 데이터와 함께 돌려준다
   send_mail: (a, b, ctx) => sendMail(a, b.kind, ctx.origin),
   test_mail: (a, b, ctx) => sendTestMail(ctx.admin, b.kind, ctx.origin),

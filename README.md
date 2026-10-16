@@ -1,6 +1,6 @@
-# 연합 해커톤 웹사이트
+# SSH HACKATHON 웹사이트
 
-한양대 × 성균관대 × 서강대 연합 해커톤 메인 랜딩 페이지.
+서강대 × 성균관대 × 한양대 연합 해커톤(SSH HACKATHON) 웹사이트: 소개, 참가 신청, 선발·팀 배정, 결과물 제출, 심사, 결과 발표.
 
 ## 실행
 
@@ -16,11 +16,10 @@ npm run start   # 빌드 결과 실행
 | 경로 | 내용 |
 |---|---|
 | `src/app/` | Next.js App Router 진입점 (`layout.jsx`: 글꼴·메타데이터, `page.jsx`: 메인 페이지, `globals.css`: 전체 스타일) |
-| `src/content.js` | **페이지의 모든 문구.** 문구 수정은 이 파일만 고치면 된다 (일정은 관리자 페이지) |
-| `src/Scene.jsx` | 배경 3D 장면 (빛 배경, 유리 다이아몬드, 스크롤 카메라, 관측 HUD 갱신) |
-| `src/sections/` | 섹션별 컴포넌트 (Hero, About, Prizes, Eligibility, Review, Schedule, Footer) |
-| `src/components/` | 공통 부품 (Header, ApplyButton, Hud, Ph, BackgroundScene) |
-| `src/lib/schedule.js` | 신청 기간·현재 단계 계산, 날짜 표시(한국 시각) |
+| `src/content.js` | **페이지의 모든 문구.** 문구 수정은 이 파일만 고치면 된다 (일정·평가 항목은 관리자 페이지) |
+| `src/sections/` | 메인 페이지 섹션 (Hero, About, Prizes, Eligibility, Review, Schedule, Cta) |
+| `src/components/` | 공통 부품 (Header, Backdrop·Sphere 배경, ApplyButton, 관리자·심사·갤러리 화면 등) |
+| `src/lib/` | 서버 코드 (신청·팀·관리자·메일·심사·결과) 와 공용 계산 (`schedule.js`: 날짜 표시(한국 시각), `scoring.js`: 심사 점수 집계) |
 
 ## 문구 채우기
 
@@ -28,11 +27,11 @@ npm run start   # 빌드 결과 실행
 - 일정(날짜)과 팀 인원은 `content.js`에 없다. 관리자 페이지 > 일정에 넣으면 첫 화면의 일시·신청 버튼·행사 일정·참가 자격에 그대로 보이고, 비어 있는 날짜는 `[미정]`으로 보인다.
 - 신청 시작·마감을 비워 두면 서버가 그쪽 제한 없이 신청을 받는다. 운영 전에 반드시 채운다.
 
-## 3D 장면
+## 디자인 (홍보 포스터 기준)
 
-- 3D 장면은 브라우저에서만 불러온다(`components/BackgroundScene.jsx`, `ssr: false`). 페이지 전체 뒤에 고정되어 있다. 각 섹션의 `data-diamond` 값이 짝지은 다이아몬드(유성) 번호이며, 섹션이 화면 가운데에 오면 카메라가 그 유성을 비춘다. `-1`이거나 값이 없으면 전체 모습을 보여준다.
-- 전환 타이밍은 `Scene.jsx` 위쪽의 `T_OUT`, `T_HOLD`, `T_IN`, 유성이 화면에서 차지하는 비율은 `FILL`로 조절한다.
-- 후처리(`EffectComposer`)에서 MSAA(`multisampling`)는 켜지 말 것. GPU에 따라 에러 없이 화면 전체가 검게 나온다.
+- 차콜 바탕, 오른쪽 가장자리에서 번지는 스펙트럼 빛(서강 빨강 → 성균관 초록 → 한양 파랑), 크게 걸친 점선 원. 섹션 제목은 ◆ + 굵은 제목, 본문 왼쪽에 가는 세로선. 상자는 버튼과 같은 둥근 리퀴드 글래스. 글꼴은 Pretendard 하나
+- 배경: `components/Backdrop.jsx` (모든 페이지, CSS만). 메인 페이지는 같은 자리에 `components/Sphere.jsx`의 점선 구체가 그려지고 정적인 점선 원은 숨는다
+- 점선 구체는 three.js 없이 2D 캔버스로 그린다(경도·위도선을 점으로, 윤곽은 점선 원). 회전 속도·점 간격·기울기는 `Sphere.jsx` 위쪽 상수, 위치·크기는 `globals.css`의 `--ring-x`, `--ring-y`, `--ring-r`(점선 원과 공용)로 조절한다. 움직임 줄이기 설정이면 멈춘 채로 그린다
 
 ## 백엔드 (로그인·데이터)
 
@@ -95,4 +94,4 @@ Vercel에 배포되어 있다: https://ssh-hackathon-frontend.vercel.app
 
 ## 사용 라이브러리
 
-Next.js 16 (App Router), React, three.js, @react-three/fiber, @react-three/drei, @react-three/postprocessing
+Next.js 16 (App Router), React, NextAuth(Auth.js), Supabase(supabase-js), Resend(메일, HTTP API로 직접 호출)
