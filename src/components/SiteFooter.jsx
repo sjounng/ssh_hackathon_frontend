@@ -1,5 +1,6 @@
 import { EVENT, FOOTER, HOSTS } from '../content.js'
 import Ph from './Ph.jsx'
+import { Logo } from './Logo.jsx'
 
 // 공통 푸터: 문의 채널, 개인정보 처리방침 (기획서 기능 0)
 export default function SiteFooter() {
@@ -7,7 +8,7 @@ export default function SiteFooter() {
     <footer className="footer">
       <div className="footer-top">
         <div>
-          <p className="footer-name"><Ph>{EVENT.name}</Ph></p>
+          <Logo className="footer-logo" label={EVENT.name} />
           <p className="footer-hosts">
             {HOSTS.map((h) => (
               <span key={h.key}>{h.name} {h.club}</span>

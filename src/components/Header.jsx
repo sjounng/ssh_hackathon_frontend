@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { EVENT, HOSTS, NAV } from '../content.js'
+import { EVENT, NAV } from '../content.js'
+import LogoMark from './LogoMark.jsx'
 import Ph from './Ph.jsx'
 
 // 사용자별 메뉴 권한 (기획서 기능 0). 비로그인에게도 '참가 신청'은 보여주고, 누르면 로그인으로 이어진다.
@@ -49,7 +50,7 @@ export default function Header({ user }) {
   return (
     <header className={`nav ${scrolled ? 'scrolled' : ''} ${open ? 'open' : ''} ${hidden ? 'faded' : ''}`}>
       <Link className="logo" href="/">
-        {HOSTS.map((h) => <span key={h.key} className={`dot ${h.key}`} />)}
+        <LogoMark className="logo-mark" />
         <span className="logo-text"><Ph>{EVENT.name}</Ph></span>
       </Link>
       <nav className="nav-links" aria-label="주요 메뉴">

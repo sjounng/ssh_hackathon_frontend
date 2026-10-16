@@ -66,8 +66,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* 아직 채워지지 않은 [자리표시]: 밑줄 없이 본문과 같게 보인다 (대괄호로만 구분) */
 mark.ph { background: none; color: inherit; }
 
-.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
-.dot.hy { background: var(--hy-light); } .dot.sg { background: var(--sg-light); } .dot.sk { background: var(--sk-light); }
 
 /* ---------- 리퀴드 글래스 반사 테두리: 가장자리 1px 링에만 그린다 ----------
    (테두리 그라데이션을 배경에 깔면 투명한 안쪽으로 그대로 비쳐 하얗게 뜬다) */
@@ -142,8 +140,8 @@ mark.ph { background: none; color: inherit; }
 .nav > * { position: relative; }
 /* 스크롤해서 글 위에 올라가면 읽히도록 아주 살짝만 어둡게 (흰 기운은 넣지 않는다) */
 .nav.scrolled { --nav-fill: rgba(46, 46, 46, 0.55); }
-.logo { display: flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
-.logo-text { margin-left: 8px; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+.logo-mark { width: 24px; height: 24px; flex: none; }
 .nav-links { display: flex; gap: 2px; }
 .nav-links a {
   position: relative;
@@ -526,12 +524,9 @@ main, .cta, .footer { position: relative; z-index: 1; }
 .crop.tl::after, .crop.bl::after { left: 0; }
 .crop.tr::after, .crop.br::after { right: 0; }
 .hero-kicker { font-size: clamp(14px, 1.45vw, 20px); font-weight: 500; color: rgba(255, 255, 255, 0.88); }
-.hero-title { margin-top: clamp(14px, 2.4vh, 22px); }
-.hero h1 {
-  display: grid; font-family: var(--display); font-weight: 800;
-  font-size: clamp(52px, 7.2vw, 112px); line-height: 0.94; letter-spacing: -0.015em;
-}
-.hero-sub { margin-top: clamp(10px, 1.6vh, 16px); font-size: clamp(17px, 2vw, 28px); font-weight: 700; letter-spacing: -0.01em; }
+.hero-title { margin-top: clamp(18px, 3vh, 28px); line-height: 0; }
+/* 로고(마크·행사명·부제)는 디자인 원본 SVG 그대로. 가로 739 : 세로 195 */
+.hero-logo { width: clamp(300px, 50vw, 700px); height: auto; color: #fff; }
 /* ◆ 항목 2×2: 제목 앞 마름모, 내용 왼쪽에 마름모 가운데를 지나는 가는 세로선 */
 .hero-info {
   --d: clamp(14px, 1.4vw, 20px); --g: clamp(14px, 1.8vw, 26px);
@@ -648,7 +643,7 @@ h3 { font-size: 20px; font-weight: 600; }
 }
 .footer { padding: 48px var(--gutter) 32px; border-top: 1px solid var(--line); background: var(--bg-2); }
 .footer-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-.footer-name { font-family: var(--display); font-weight: 800; font-size: 22px; margin-bottom: 14px; }
+.footer-logo { display: block; height: 44px; width: auto; margin-bottom: 16px; color: #fff; }
 .footer-hosts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--ink-soft); }
 .footer-hosts span { display: inline-flex; align-items: center; gap: 6px; }
 .footer-links { display: grid; gap: 8px; font-size: 14px; }
