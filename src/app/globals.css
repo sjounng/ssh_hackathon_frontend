@@ -1,6 +1,7 @@
 :root {
-  --bg: #050608;
-  --bg-2: #0a0c10;
+  /* 포스터 디자인: 차콜 바탕 */
+  --bg: #2e2e2e;
+  --bg-2: #262626;
   --ink: #f4f5f7;
   --ink-soft: rgba(244, 245, 247, 0.68);
   --ink-faint: rgba(244, 245, 247, 0.42);
@@ -12,12 +13,16 @@
   --hy-light: #3d86e0;
   --sg-light: #ff4a3d;
   --sk-light: #3fbf8a;
-  /* --font-* 변수는 layout.jsx에서 next/font로 불러온 글꼴 */
-  --display: var(--font-unbounded), system-ui, sans-serif;
-  --body: var(--font-inter-tight), 'Pretendard Variable', Pretendard, system-ui, sans-serif;
-  --mono: var(--font-jetbrains), ui-monospace, monospace;
+  /* 글꼴은 Pretendard 하나 (layout.jsx에서 CDN으로 불러온다). 제목은 굵기로만 구분한다 */
+  --display: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  --body: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
   --gutter: clamp(16px, 4vw, 48px);
-  --cut: 28px;
+  --radius: 24px; /* 상자 둥글기 (버튼은 완전한 알약) */
+  --dia: clamp(15px, 1.6vw, 22px); /* 섹션 제목 앞 ◆ 크기 */
+  /* 점선 원·구체의 자리: 중심(--ring-x, --ring-y)과 반지름. Backdrop의 정적인 원과 Sphere가 같은 값을 쓴다 */
+  --ring-r: min(46vh, 34vw);
+  --ring-x: 74vw;
+  --ring-y: 52vh;
 
   /* 리퀴드 글래스 (네브바·버튼 공통)
      흰 채움 없이 거의 투명하게 두고, 유리는 두 가지로만 표현한다:
@@ -37,17 +42,11 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.06),
     0 4px 14px rgba(0, 0, 0, 0.18);
   /* 떠오르는 유리(목록·달력·대화상자): 뒤가 비쳐도 글이 읽히도록 흐림을 더 준다 */
-  --lg-float-fill: rgba(14, 16, 22, 0.42);
+  --lg-float-fill: rgba(40, 40, 40, 0.78);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-/* 페이지 단위 스크롤: 한 번 스크롤하면 다음 섹션이 화면 중앙에 딱 멈춘다 (= 다이아몬드 안 가장 깊은 지점) */
-/* 메인 페이지(#top이 있는 페이지)에만 적용: 기능 페이지는 멈출 곳이 푸터뿐이라 강제로 끌려 내려간다 */
-@media (min-width: 861px) { html:has(#top) { scroll-snap-type: y mandatory; } }
-@media (max-width: 860px) { html:has(#top) { scroll-snap-type: y proximity; } }
-.hero, .section, .cta { scroll-snap-align: center; scroll-snap-stop: always; }
-.footer { scroll-snap-align: end; }
 body {
   background: var(--bg);
   color: var(--ink);
@@ -59,7 +58,7 @@ body {
 a { color: inherit; text-decoration: none; }
 ul, ol { list-style: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-.mono { font-family: var(--mono); letter-spacing: 0.02em; }
+.mono { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
 /* 작은 라벨·메모: 영문 대문자 고정폭 라벨이나 테두리 알약 대신 평범한 옅은 글자 */
 .label { font-size: 13px; font-weight: 500; color: var(--ink-faint); margin-bottom: 12px; }
 .note { font-size: 12px; color: var(--ink-faint); }
@@ -72,7 +71,7 @@ mark.ph { background: none; color: inherit; }
 
 /* ---------- 리퀴드 글래스 반사 테두리: 가장자리 1px 링에만 그린다 ----------
    (테두리 그라데이션을 배경에 깔면 투명한 안쪽으로 그대로 비쳐 하얗게 뜬다) */
-.btn::after, .nav::after, .nav-links a.active::after,
+.btn::after, .nav::after, .nav-links a.active::after, .glass::after,
 .select-trigger::after, .stepper::after, .admin-tabs button::after, .popover::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
   background: var(--lg-rim);
@@ -108,25 +107,16 @@ mark.ph { background: none; color: inherit; }
 .btn-tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); color: #fff; }
 
 
-/* ---------- Glass panel: 모서리를 잘라낸 리퀴드 글래스 (네브바·버튼과 같은 표현) ---------- */
+/* ---------- Glass panel: 버튼과 같은 둥근 리퀴드 글래스 (반사선은 맨 위 ::after 규칙) ---------- */
 .glass {
   position: relative;
   padding: 28px;
-  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
-  /* 흰 채움 없이, 글이 읽히도록 아주 옅게만 어둡게 */
-  background: rgba(8, 10, 14, 0.16);
+  border-radius: var(--radius);
+  /* 차콜 바탕 위에서 아주 옅게만 밝힌다 */
+  background: rgba(255, 255, 255, 0.025);
   box-shadow: var(--lg-edge);
   -webkit-backdrop-filter: blur(3px) saturate(1.6);
   backdrop-filter: url(#lg-card) saturate(1.6);
-}
-/* 반사선: 잘린 모서리까지 그대로 따라가는 1px 테두리 (바깥 다각형과 1px 안쪽 다각형 사이만 칠한다) */
-.glass::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: var(--lg-rim);
-  clip-path: polygon(evenodd,
-    0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 0,
-    1px 1px, 1px calc(100% - var(--cut) - 0.4px), calc(var(--cut) + 0.4px) calc(100% - 1px), calc(100% - 1px) calc(100% - 1px),
-    calc(100% - 1px) calc(var(--cut) + 0.4px), calc(100% - var(--cut) - 0.4px) 1px, 1px 1px);
 }
 
 /* ---------- Nav: 리퀴드 글래스 ---------- */
@@ -151,8 +141,8 @@ mark.ph { background: none; color: inherit; }
 }
 .nav > * { position: relative; }
 /* 스크롤해서 글 위에 올라가면 읽히도록 아주 살짝만 어둡게 (흰 기운은 넣지 않는다) */
-.nav.scrolled { --nav-fill: rgba(6, 8, 12, 0.18); }
-.logo { display: flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 800; font-size: 16px; }
+.nav.scrolled { --nav-fill: rgba(46, 46, 46, 0.55); }
+.logo { display: flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
 .logo-text { margin-left: 8px; }
 .nav-links { display: flex; gap: 2px; }
 .nav-links a {
@@ -354,10 +344,10 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 .field .stepper { justify-self: start; }
 .stepper output { min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
 
-/* 확인 대화상자: 패널(.glass)과 같은 잘린 모서리 유리 + 떠오르는 유리의 흐림 */
+/* 확인 대화상자: 패널(.glass)과 같은 둥근 유리 + 떠오르는 유리의 흐림 */
 .dialog-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(3px); animation: pop-in 0.15s ease-out; }
 .glass.dialog {
-  --cut: 22px; max-width: 420px; width: 100%; padding: 28px;
+  max-width: 420px; width: 100%; padding: 28px;
   background: var(--lg-float-fill);
   -webkit-backdrop-filter: blur(20px) saturate(1.7);
   backdrop-filter: blur(18px) url(#lg-card) saturate(1.7);
@@ -450,7 +440,7 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 /* ---------- 결과 발표 ---------- */
 .results-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
 .results-list li.first { grid-column: 1 / -1; }
-.glass.result-card { display: flex; flex-direction: column; height: 100%; padding: 0; transition: transform 0.2s; }
+.glass.result-card { display: flex; flex-direction: column; height: 100%; padding: 0; overflow: hidden; transition: transform 0.2s; }
 .glass.result-card:hover { transform: translateY(-2px); }
 .results-list li.first .result-card { display: grid; grid-template-columns: 1.3fr 1fr; }
 .results-list li.first .project-cover { aspect-ratio: auto; min-height: 280px; }
@@ -468,7 +458,7 @@ input[type='checkbox']:disabled { opacity: 0.35; cursor: not-allowed; }
 /* ---------- 프로젝트 갤러리 ---------- */
 .page-inner.gallery { max-width: 1120px; }
 .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
-.glass.project-card { display: flex; flex-direction: column; height: 100%; padding: 0; transition: transform 0.2s; }
+.glass.project-card { display: flex; flex-direction: column; height: 100%; padding: 0; overflow: hidden; transition: transform 0.2s; }
 .glass.project-card:hover { transform: translateY(-2px); }
 .project-cover { aspect-ratio: 16 / 9; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg, rgba(61, 134, 224, 0.18), rgba(63, 191, 138, 0.12) 50%, rgba(255, 74, 61, 0.16)); }
 .project-cover img { width: 100%; height: 100%; object-fit: cover; }
@@ -486,92 +476,95 @@ h1 + .project-team { margin-top: 10px; font-size: 16px; }
 /* ---------- 기능 페이지 (준비 중) ---------- */
 .page { position: relative; z-index: 1; min-height: 100svh; padding: 140px var(--gutter) 96px; }
 .page-inner { max-width: 720px; }
-.page h1 { font-family: var(--display); font-weight: 600; font-size: clamp(34px, 5vw, 64px); letter-spacing: -0.03em; line-height: 1.05; }
+.page h1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 5vw, 60px); letter-spacing: -0.02em; line-height: 1.1; }
 .page-card { margin: 40px 0 28px; }
 .page-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
 .page-card-head h2 { font-family: var(--body); font-size: 18px; font-weight: 600; letter-spacing: 0; }
 .page-card li { position: relative; padding: 12px 0 12px 20px; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.55; color: var(--ink-soft); }
 .page-card li::before { content: ''; position: absolute; left: 2px; top: 1.2em; width: 6px; height: 6px; background: var(--ink-faint); transform: rotate(45deg); }
 
-/* ---------- Hero ---------- */
-/* 페이지 전체 뒤에 고정된 3D 장면. 섹션들은 그 위를 스크롤한다 */
-.bg-canvas { position: fixed; inset: 0; z-index: 0; transition: filter 0.8s ease, transform 0.8s ease; }
-/* 메인 페이지(#top이 있는 페이지)가 아니면 배경을 흐리고 어둡게: 글에 집중할 수 있게.
-   흐림 때문에 가장자리가 비치지 않도록 살짝 키운다 */
-html:not(:has(#top)) .bg-canvas { filter: blur(16px) brightness(0.6) saturate(1.1); transform: scale(1.06); }
+/* ---------- 배경 (포스터): 오른쪽 스펙트럼 빛 + 점선 원 / 메인 페이지는 점선 구체 ---------- */
+body { background: var(--bg); }
+.backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+/* 서강 빨강 → 성균관 초록 → 한양 파랑. 오른쪽 가장자리에서 가장 진하고 왼쪽으로 사라진다 */
+.backdrop-glow {
+  position: absolute; top: -12vh; right: -16vw; width: 70vw; height: 124vh;
+  background: linear-gradient(180deg, #e2452c 4%, #dd7a2e 24%, #3c9a4e 50%, #2c5ed4 74%, #4a34b8 96%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 72% 50%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 72% 50%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 100%);
+  opacity: 0.8;
+}
+.backdrop-ring, .sphere {
+  position: fixed; left: calc(var(--ring-x) - var(--ring-r)); top: calc(var(--ring-y) - var(--ring-r));
+  width: calc(var(--ring-r) * 2); height: calc(var(--ring-r) * 2);
+}
+.backdrop-ring circle { fill: none; stroke: rgba(255, 255, 255, 0.42); stroke-width: 2.2; stroke-dasharray: 22 18; }
+.sphere { z-index: 0; pointer-events: none; }
+/* 구체가 그려지기 시작하면 같은 자리의 정적인 원은 숨긴다 */
+html:has(.sphere.ready) .backdrop-ring { opacity: 0; }
+/* 메인이 아닌 페이지: 글에 집중하도록 배경을 조금 죽인다 */
+html:not(:has(#top)) .backdrop { opacity: 0.6; }
 main, .cta, .footer { position: relative; z-index: 1; }
-.hero { position: relative; height: 100svh; min-height: 640px; }
-.hero-copy, .hero-side { position: absolute; z-index: 2; }
-.hero-copy { left: var(--gutter); bottom: clamp(32px, 6vh, 64px); pointer-events: none; }
+
+/* ---------- Hero (포스터 구성) ---------- */
+.hero { position: relative; min-height: 100svh; display: grid; align-items: center; padding: 92px var(--gutter) 40px; }
+/* 포스터의 틀: 위아래 가로선과 네 모서리 재단선(+) */
+.frame { position: relative; width: 100%; max-width: 1180px; padding: clamp(28px, 4.5vh, 52px) clamp(8px, 4vw, 56px); }
+.frame::before, .frame::after { content: ''; position: absolute; left: 44px; right: 44px; height: 1px; background: rgba(255, 255, 255, 0.6); }
+.frame::before { top: 0; }
+.frame::after { bottom: 0; }
+.crop { position: absolute; width: 0; height: 0; }
+.crop::before, .crop::after { content: ''; position: absolute; background: rgba(255, 255, 255, 0.75); }
+.crop::before { width: 56px; height: 1px; top: 0; }
+.crop::after { width: 1px; height: 72px; top: -36px; }
+.crop.tl, .crop.bl { left: 0; }
+.crop.tr, .crop.br { right: 0; }
+.crop.tl, .crop.tr { top: 0; }
+.crop.bl, .crop.br { bottom: 0; }
+.crop.tl::before, .crop.bl::before { right: -14px; }
+.crop.tr::before, .crop.br::before { left: -14px; }
+.crop.tl::after, .crop.bl::after { left: 0; }
+.crop.tr::after, .crop.br::after { right: 0; }
+.hero-kicker { font-size: clamp(14px, 1.45vw, 20px); font-weight: 500; color: rgba(255, 255, 255, 0.88); }
+.hero-title { margin-top: clamp(14px, 2.4vh, 22px); }
 .hero h1 {
-  font-family: var(--display); font-weight: 800;
-  font-size: clamp(44px, 8.5vw, 132px); line-height: 0.92; letter-spacing: -0.04em;
+  display: grid; font-family: var(--display); font-weight: 800;
+  font-size: clamp(52px, 7.2vw, 112px); line-height: 0.94; letter-spacing: -0.015em;
 }
-.hero-kicker { font-size: 15px; color: rgba(255, 255, 255, 0.75); margin-bottom: 18px; }
-.hero-side {
-  right: var(--gutter); top: 104px; width: min(340px, 100% - 2 * var(--gutter));
+.hero-sub { margin-top: clamp(10px, 1.6vh, 16px); font-size: clamp(17px, 2vw, 28px); font-weight: 700; letter-spacing: -0.01em; }
+/* ◆ 항목 2×2: 제목 앞 마름모, 내용 왼쪽에 마름모 가운데를 지나는 가는 세로선 */
+.hero-info {
+  --d: clamp(14px, 1.4vw, 20px); --g: clamp(14px, 1.8vw, 26px);
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3.4vh, 36px) clamp(20px, 4vw, 56px);
+  margin-top: clamp(28px, 5vh, 52px); max-width: 760px;
 }
-.hero-meta { font-size: 14px; border-top: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 22px; }
-.hero-meta div { display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
-.hero-meta dt { color: rgba(255, 255, 255, 0.6); }
+.hero-info dt { display: flex; align-items: center; gap: var(--g); font-size: clamp(19px, 1.9vw, 28px); font-weight: 800; letter-spacing: -0.01em; }
+.hero-info dt::before, .section-head h2::before {
+  content: ''; flex: none; width: var(--d, var(--dia)); height: var(--d, var(--dia)); background: #fff; transform: rotate(45deg) scale(0.86);
+}
+.hero-info dd {
+  display: grid; align-content: start; gap: 2px; min-height: 3.2em;
+  margin: clamp(8px, 1.3vh, 14px) 0 0 calc(var(--d) / 2); padding-left: calc(var(--d) / 2 + var(--g) - 1px);
+  border-left: 1px solid rgba(255, 255, 255, 0.55);
+  font-size: clamp(15px, 1.3vw, 18px); line-height: 1.55;
+}
+.bullets li { position: relative; padding-left: 1em; }
+.bullets li::before { content: ''; position: absolute; left: 0.15em; top: 0.68em; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.hero-actions { margin-top: clamp(24px, 4.2vh, 44px); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* ---------- 카메라에 맞춘 내용 등장 (클래스는 Scene.jsx의 CameraRig가 붙인다) ---------- */
-.reveal-ready .section > *, .reveal-ready .cta > *, .reveal-ready .hero-copy, .reveal-ready .hero-side {
-  opacity: 0; transform: translateY(18px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.reveal-ready .is-active > *, .reveal-ready .hero.is-active .hero-copy, .reveal-ready .hero.is-active .hero-side {
-  opacity: 1; transform: none;
-  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-/* 제목부터 차례로 */
-.reveal-ready .is-active > :nth-child(2), .reveal-ready .hero.is-active .hero-side { transition-delay: 0.1s; }
-.reveal-ready .is-active > :nth-child(3) { transition-delay: 0.2s; }
-.reveal-ready .is-active > :nth-child(4) { transition-delay: 0.3s; }
-.reveal-ready .is-active > :nth-child(n + 5) { transition-delay: 0.4s; }
-@media (prefers-reduced-motion: reduce) {
-  .reveal-ready .section > *, .reveal-ready .cta > *, .reveal-ready .hero-copy, .reveal-ready .hero-side { transform: none; }
-}
-
-/* ---------- 관측 HUD (위치·크기·투명도는 Scene.jsx가 매 프레임 갱신) ---------- */
-.hud { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: var(--o, 0); --x: 50vw; --y: 50vh; --r: 80px; }
-.hud-reticle {
-  position: absolute; left: var(--x); top: var(--y);
-  width: calc(var(--r) * 2.5); height: calc(var(--r) * 2.5); transform: translate(-50%, -50%);
-}
-.hud-reticle i { position: absolute; width: 16px; height: 16px; border: 1px solid rgba(255, 255, 255, 0.75); }
-.hud-reticle i:nth-of-type(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; }
-.hud-reticle i:nth-of-type(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; }
-.hud-reticle i:nth-of-type(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; }
-.hud-reticle i:nth-of-type(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; }
-.hud-ring {
-  position: absolute; inset: 14%; border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, 0.28); animation: hud-spin 24s linear infinite;
-}
-@keyframes hud-spin { to { transform: rotate(360deg); } }
-.hud-lead {
-  position: absolute; top: var(--y); height: 1px;
-  right: calc(100vw - var(--x) + var(--r) * 1.25); width: min(16vw, 220px);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6));
-}
-.hud-lead::before { content: ''; position: absolute; left: 0; top: -3px; width: 7px; height: 7px; background: #fff; transform: rotate(45deg); opacity: 0.8; }
-.hud-tag {
-  position: absolute; left: min(calc(var(--x) - var(--r) * 1.25), calc(100vw - 300px)); top: max(calc(var(--y) - var(--r) * 1.25 - 46px), 90px);
-  display: grid; gap: 4px; font-size: 11px; letter-spacing: 0.06em; white-space: nowrap;
-}
-.hud-code { color: #fff; }
-.hud-coord { color: rgba(255, 255, 255, 0.55); }
-
 /* ---------- Sections ---------- */
-.section {
-  position: relative; padding: clamp(80px, 11vh, 120px) var(--gutter) clamp(40px, 6vh, 72px);
-  min-height: 100svh; /* 섹션 하나 = 화면 한 장 = 다이아몬드 하나 */
-  display: flex; flex-direction: column; justify-content: center;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45); /* 배경을 어둡게 깔지 않고 글씨만 살짝 띄운다 */
+.section { position: relative; padding: clamp(72px, 12vh, 128px) var(--gutter) clamp(24px, 4vh, 40px); }
+.section-head { max-width: 860px; margin-bottom: clamp(20px, 3vh, 32px); position: relative; z-index: 1; }
+h2 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 3.4vw, 46px); line-height: 1.15; letter-spacing: -0.02em; }
+/* 포스터의 항목 머리: ◆ + 굵은 제목 */
+.section-head h2 { display: flex; align-items: center; gap: clamp(16px, 2vw, 26px); }
+/* 본문은 ◆ 가운데를 지나는 가는 세로선 오른쪽에 */
+.section-body {
+  margin-left: calc(var(--dia) / 2); padding-left: calc(var(--dia) / 2 + clamp(16px, 2vw, 26px) - 1px);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
 }
-.section-head { max-width: 860px; margin-bottom: clamp(28px, 5vh, 48px); position: relative; z-index: 1; }
-h2 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 4.4vw, 60px); line-height: 1.08; letter-spacing: -0.03em; }
+.section-body > .lede:first-child { margin-top: 0; margin-bottom: clamp(24px, 4vh, 36px); }
 h3 { font-size: 20px; font-weight: 600; }
 .lede { margin-top: 20px; font-size: 18px; line-height: 1.6; color: var(--ink-soft); max-width: 640px; }
 .sub-title { margin: clamp(32px, 5vh, 56px) 0 20px; font-size: 22px; }
@@ -582,7 +575,7 @@ h3 { font-size: 20px; font-weight: 600; }
 .about-body > p:not(.lede) { margin-top: 18px; font-size: 16px; line-height: 1.75; color: var(--ink-soft); }
 .about-body .lede { margin-top: 0; color: var(--ink); }
 .topic { padding: 36px; }
-.topic h3 { font-family: var(--display); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; margin-bottom: 16px; }
+.topic h3 { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; margin-bottom: 16px; }
 .topic p { color: var(--ink-soft); line-height: 1.7; }
 
 /* Prizes */
@@ -604,10 +597,10 @@ h3 { font-size: 20px; font-weight: 600; }
 .track ol { flex: 1; align-content: start; }
 .track-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 18px; }
 .track-size { font-size: 14px; color: var(--ink-soft); }
-.track-head h3 { font-family: var(--display); font-size: 26px; }
+.track-head h3 { font-family: var(--display); font-weight: 800; font-size: 24px; }
 .track ol { counter-reset: step; display: grid; gap: 14px; }
 .track li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: 8px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); }
-.track li::before { content: counter(step); font-family: var(--mono); font-size: 12px; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); margin-top: 1px; }
+.track li::before { content: counter(step); font-variant-numeric: tabular-nums; font-size: 12px; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); margin-top: 1px; }
 .track-result { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-weight: 600; }
 .notes { margin-top: 20px; display: grid; gap: 8px; }
 .notes li { position: relative; padding-left: 18px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
@@ -644,18 +637,18 @@ h3 { font-size: 20px; font-weight: 600; }
 .day li .mono { color: var(--ink-faint); font-size: 13px; padding-top: 2px; }
 
 /* CTA + Footer */
-.cta { min-height: 100svh; align-content: center; text-align: center; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45); padding: clamp(96px, 16vh, 180px) var(--gutter); display: grid; justify-items: center; border-top: 1px solid var(--line); }
+.cta { align-content: center; text-align: center; padding: clamp(96px, 16vh, 168px) var(--gutter); display: grid; justify-items: center; }
 .cta > * { position: relative; z-index: 1; }
 .cta .lede { margin: 16px auto 32px; }
-/* 넓은 화면: hero처럼 전체 모습을 비우고 글은 왼쪽 아래에 */
+/* 넓은 화면: 섹션들과 같이 왼쪽 정렬 */
 @media (min-width: 861px) {
-  .cta { align-content: end; justify-items: start; text-align: left; padding-bottom: clamp(48px, 9vh, 96px); }
+  .cta { justify-items: start; text-align: left; }
   .cta h2 { max-width: 760px; }
   .cta .lede { margin-left: 0; }
 }
-.footer { padding: 48px var(--gutter) 32px; border-top: 1px solid var(--line); background: rgba(10, 12, 16, 0.88); backdrop-filter: blur(16px); }
+.footer { padding: 48px var(--gutter) 32px; border-top: 1px solid var(--line); background: var(--bg-2); }
 .footer-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-.footer-name { font-family: var(--display); font-weight: 600; font-size: 20px; margin-bottom: 14px; }
+.footer-name { font-family: var(--display); font-weight: 800; font-size: 22px; margin-bottom: 14px; }
 .footer-hosts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--ink-soft); }
 .footer-hosts span { display: inline-flex; align-items: center; gap: 6px; }
 .footer-links { display: grid; gap: 8px; font-size: 14px; }
@@ -665,9 +658,9 @@ h3 { font-size: 20px; font-weight: 600; }
 .footer-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-faint); }
 .footer-bottom a { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; }
 
-/* 관측 레이아웃 (넓은 화면): 설명은 왼쪽, 오른쪽은 초점이 맞은 유성과 HUD 자리로 비워 둔다 */
+/* 넓은 화면: 설명은 왼쪽, 오른쪽은 빛과 구체 자리로 비워 둔다 (포스터 배치) */
 @media (min-width: 1101px) {
-  .section > * { width: min(780px, 54vw); }
+  .section > * { width: min(840px, 60vw); }
   .about-grid { grid-template-columns: 1fr; gap: 28px; }
     .criteria ul { column-gap: 28px; }
   .criteria li { padding: 11px 0; }
@@ -685,16 +678,17 @@ h3 { font-size: 20px; font-weight: 600; }
 @media (max-width: 960px) {
   .nav-links { display: none; }
   .menu-btn { display: block; }
-  .nav.open { border-radius: 24px; flex-wrap: wrap; --nav-fill: rgba(8, 10, 14, 0.6); }
+  .nav.open { border-radius: 24px; flex-wrap: wrap; --nav-fill: rgba(40, 40, 40, 0.92); }
   .nav.open .nav-links { display: grid; order: 3; width: 100%; padding: 8px 0 6px; }
   .nav.open .nav-links a { padding: 12px 10px; font-size: 16px; }
 }
 @media (max-width: 860px) {
-  .hud { display: none; } /* 모바일은 유성이 글 뒤에 깔려 HUD는 생략 */
+  :root { --ring-r: 64vw; --ring-x: 74vw; --ring-y: 30vh; }
+  .sphere, .backdrop-ring { opacity: 0.6; } /* 글 뒤에 겹치므로 흐리게 */
   .page-indicator { display: none; } /* 가장자리 여백이 좁아 카드와 겹치므로 생략 */
-  .hero-side { left: var(--gutter); right: var(--gutter); top: auto; bottom: 28px; width: auto; }
-  .hero-copy { top: 96px; bottom: auto; }
-  .hero-meta { margin-bottom: 16px; }
+  .hero { padding-top: 112px; }
+  .hero-info { grid-template-columns: 1fr; }
+  .frame::before, .frame::after { left: 28px; right: 28px; }
   .about-grid, .tracks, .timetable, .benefits { grid-template-columns: 1fr; }
   .awards { grid-template-columns: 1fr; }
   .award { min-height: 150px; }
@@ -706,7 +700,6 @@ h3 { font-size: 20px; font-weight: 600; }
   .phases li { grid-template-columns: 24px 1fr auto; align-items: center; column-gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
   .phase-dot { margin: 0; grid-row: span 2; }
   .phase-date { grid-column: 2; }
-      .hero-meta div { padding: 8px 0; }
   .logo-text { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

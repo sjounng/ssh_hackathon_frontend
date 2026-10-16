@@ -5,7 +5,7 @@ import { getResults } from '../../lib/results.js'
 import { formatKstDateTime } from '../../lib/schedule.js'
 import ResultsList from '../../components/ResultsList.jsx'
 
-export const metadata = { title: '결과 발표 · 연합 해커톤' }
+export const metadata = { title: '결과 발표' }
 
 // 결과 발표 (기획서 기능 8). 공개 전에는 발표 예정 안내, 운영진에게는 미리보기
 export default async function ResultsPage() {

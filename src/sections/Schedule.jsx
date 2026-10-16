@@ -13,39 +13,41 @@ export default function Schedule({ schedule }) {
   useEffect(() => setCurrent(getCurrentPhase(buildPhases(schedule))), [schedule])
 
   return (
-    <section className="section" id="schedule" data-diamond="5">
+    <section className="section" id="schedule">
       <div className="section-head">
         <h2>행사 일정</h2>
       </div>
 
-      <ol className="phases">
-        {phases.map((p, i) => (
-          <li key={p.key} className={i < current ? 'done' : i === current ? 'now' : ''}>
-            <span className="phase-dot" />
-            <span className="phase-label">{p.label}</span>
-            <span className="phase-date mono"><Ph>{p.date}</Ph></span>
-          </li>
-        ))}
-      </ol>
+      <div className="section-body">
+        <ol className="phases">
+          {phases.map((p, i) => (
+            <li key={p.key} className={i < current ? 'done' : i === current ? 'now' : ''}>
+              <span className="phase-dot" />
+              <span className="phase-label">{p.label}</span>
+              <span className="phase-date mono"><Ph>{p.date}</Ph></span>
+            </li>
+          ))}
+        </ol>
 
-      <h3 className="sub-title">당일 타임테이블</h3>
-      <div className="timetable">
-        {TIMETABLE.map((d, i) => (
-          <div className="glass day" key={d.day}>
-            <p className="day-head">
-              <span className="mono">{d.day}</span>
-              <span><Ph>{formatEventDay(schedule?.event_start_at, i)}</Ph></span>
-            </p>
-            <ul>
-              {d.rows.map((r, i) => (
-                <li key={i}>
-                  <span className="mono"><Ph>{r.time}</Ph></span>
-                  <span><Ph>{r.title}</Ph></span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <h3 className="sub-title">당일 타임테이블</h3>
+        <div className="timetable">
+          {TIMETABLE.map((d, i) => (
+            <div className="glass day" key={d.day}>
+              <p className="day-head">
+                <span className="mono">{d.day}</span>
+                <span><Ph>{formatEventDay(schedule?.event_start_at, i)}</Ph></span>
+              </p>
+              <ul>
+                {d.rows.map((r, i) => (
+                  <li key={i}>
+                    <span className="mono"><Ph>{r.time}</Ph></span>
+                    <span><Ph>{r.title}</Ph></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

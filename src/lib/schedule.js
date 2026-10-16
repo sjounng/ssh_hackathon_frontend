@@ -52,6 +52,24 @@ export function formatKstDateTime(value) {
   return `${t.y}.${p2(t.m)}.${p2(t.d)} (${t.w}) ${p2(t.h)}:${p2(t.min)}`
 }
 
+// 12.30 (수)
+export function formatMonthDayWeek(value) {
+  if (!value) return UNSET
+  const t = kst(value)
+  return `${t.m}.${p2(t.d)} (${t.w})`
+}
+
+// 행사 시각: 같은 날이면 2027.01.10 (일) 09:00 – 22:00, 날짜가 다르면 끝 날짜까지
+export function formatEventRange(start, end) {
+  if (!start) return UNSET
+  const a = kst(start)
+  const head = `${a.y}.${p2(a.m)}.${p2(a.d)} (${a.w})`
+  const from = `${p2(a.h)}:${p2(a.min)}`
+  if (!end) return `${head} ${from}`
+  const b = kst(end)
+  return a.y === b.y && a.m === b.m && a.d === b.d ? `${head} ${from} – ${p2(b.h)}:${p2(b.min)}` : `${head} – ${p2(b.m)}.${p2(b.d)} (${b.w})`
+}
+
 // 타임테이블 n일차(0부터) 날짜: 행사 시작일 + n일 → 11.14 (토)
 export function formatEventDay(start, n) {
   if (!start) return UNSET

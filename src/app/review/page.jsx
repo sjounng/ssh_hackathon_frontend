@@ -4,7 +4,7 @@ import { currentUser } from '../../auth.js'
 import { getReviewState } from '../../lib/judging.js'
 import ReviewBoard from '../../components/ReviewBoard.jsx'
 
-export const metadata = { title: '심사 · 연합 해커톤' }
+export const metadata = { title: '심사' }
 
 // 심사 (기획서 기능 7): 심사위원이 팀마다 평가 항목별 점수를 매긴다. 현황과 순위는 관리자 > 심사
 export default async function ReviewPage() {

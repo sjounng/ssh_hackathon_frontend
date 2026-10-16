@@ -3,12 +3,12 @@ import Ph from '../components/Ph.jsx'
 
 export default function About() {
   return (
-    <section className="section" id="about" data-diamond="1">
+    <section className="section" id="about">
       <div className="section-head">
         <h2><Ph>{ABOUT.title}</Ph></h2>
       </div>
 
-      <div className="about-grid">
+      <div className="section-body about-grid">
         <div className="about-body">
           <p className="lede"><Ph>{EVENT.summary}</Ph></p>
           {ABOUT.body.map((p, i) => <p key={i}><Ph>{p}</Ph></p>)}

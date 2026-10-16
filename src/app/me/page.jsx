@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { currentUser, signOut } from '../../auth.js'
 import { SCHOOL_LABEL, getMyOverview } from '../../lib/users.js'
 
-export const metadata = { title: '내 정보 · 연합 해커톤' }
+export const metadata = { title: '내 정보' }
 
 const STATUS_LABEL = {
   draft: '작성 중',

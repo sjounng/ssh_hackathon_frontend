@@ -4,7 +4,7 @@ import { getTeamState } from '../../lib/team.js'
 import SubmissionForm from '../../components/SubmissionForm.jsx'
 import NotParticipant from '../../components/NotParticipant.jsx'
 
-export const metadata = { title: '결과물 제출 · 연합 해커톤' }
+export const metadata = { title: '결과물 제출' }
 
 // 결과물 제출 (기획서 기능 5)
 export default async function SubmitPage() {
